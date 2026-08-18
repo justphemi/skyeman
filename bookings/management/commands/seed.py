@@ -34,25 +34,25 @@ class Command(BaseCommand):
 
         zones_data = [
             {
-                "name": "Skyeman Ikoyi Airfield",
+                "name": "Ikoyi Airfield",
                 "city": "Ikoyi, Lagos",
                 "address": "14 Alexander Avenue, Ikoyi, Lagos",
                 "description": "Lagos Island's skydive hub. Scenic views of the Lagos Lagoon, the Third Mainland Bridge, and the Atlantic coastline beyond.",
-                "image_url": "https://images.unsplash.com/photo-1521673461164-de300ebcfb17?auto=format&fit=crop&w=1200&q=80",
+                "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS8UoDelWXrCbALjub11t6BjCSfApzMnNWEeqXtFIhpNA&s=10",
             },
             {
-                "name": "Skyeman Lekki Coastal Drop Zone",
+                "name": "Lekki Coastal",
                 "city": "Lekki, Lagos",
                 "address": "Km 18, Lekki–Epe Expressway, Lekki Phase 1, Lagos",
                 "description": "Beachside tandem jumps over the Lekki coastline. Year-round warm weather, gentle Atlantic breezes, and ocean sunsets from 12,000 feet.",
-                "image_url": "https://images.unsplash.com/photo-1508614589041-895b88991e3e?auto=format&fit=crop&w=1200&q=80",
+                "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRJMKL7ZIjG9OaVfSK2EgVtLxONLC1f3OxtvdYNJslhCA&s=10",
             },
             {
-                "name": "Skyeman Victoria Island Skyport",
+                "name": "Victoria Island Skyport",
                 "city": "Victoria Island, Lagos",
                 "address": "Plot 24, Akin Adesola Street, Victoria Island, Lagos",
                 "description": "Our urban jump center minutes from Eko Atlantic. Features ultra-fast turbine aircraft, modern ground simulation trainers, and panoramic views of the city skyline.",
-                "image_url": "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1200&q=80",
+                "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTn84ue-pHOZzFs345mK2lRI7q6vcpmfM_18Kvv3C71kA&s=10",
             },
         ]
         dropzones = []

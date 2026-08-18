@@ -143,6 +143,7 @@ p { margin: 0 0 1rem; color: var(--text); }
   text-transform: lowercase;
   text-decoration: none;
   line-height: 1;
+  margin-top: 5px;
   transition: var(--transition);
 }
 .brand:hover { color: #fff !important; transform: scale(1.02); }
