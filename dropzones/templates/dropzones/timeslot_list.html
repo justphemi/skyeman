@@ -1,0 +1,154 @@
+{% extends "skyeman_project/base.html" %}
+{% load humanize %}
+{% block title %}Flight Schedule &amp; Time Slots — Skyeman Lagos{% endblock %}
+
+{% block extra_head %}
+<style>
+  .filter-bar {
+    background: #141a26;
+    border: 1px solid #232d3f;
+    border-radius: 16px;
+    padding: 1.25rem;
+    margin-bottom: 2rem;
+  }
+  .slot-card {
+    background: #141a26;
+    border: 1px solid #232d3f;
+    border-radius: 16px;
+    padding: 1.25rem;
+    transition: all 0.25s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .slot-card:hover {
+    border-color: #ff6a1a;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+  }
+  .form-select, .form-control {
+    background: #0b0f17 !important;
+    border: 1.5px solid #2a3448 !important;
+    color: #fff !important;
+    border-radius: 10px !important;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-head mb-4">
+  <h1 class="mt-2" style="font-weight:800;font-size:clamp(1.8rem, 4vw, 2.6rem);">Flight Schedule &amp; Slots</h1>
+  <p class="muted" style="color:#98a0b3;">Real-time capacity across all Lagos drop zones. Weather forecast monitoring active for all slots.</p>
+</div>
+
+<!-- Filter Bar -->
+<div class="filter-bar">
+  <form method="get" class="row g-3 align-items-end">
+    <div class="col-md-5">
+      <label class="form-label small" style="color:#e8ecf5;font-weight:600;">Filter by Drop Zone</label>
+      <select name="dropzone" class="form-select" onchange="this.form.submit()">
+        <option value="">All Drop Zones (Ikoyi, Lekki, Victoria Island)</option>
+        {% for dz in drop_zones %}
+          <option value="{{ dz.pk }}" {% if selected_dz == dz.pk|stringformat:"s" %}selected{% endif %}>
+            {{ dz.name }} — {{ dz.city }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="col-md-4">
+      <label class="form-label small" style="color:#e8ecf5;font-weight:600;">Status</label>
+      <select name="status" class="form-select" onchange="this.form.submit()">
+        <option value="">All Statuses</option>
+        <option value="open" {% if selected_status == "open" %}selected{% endif %}>Open Slots Only</option>
+        <option value="full" {% if selected_status == "full" %}selected{% endif %}>Full Slots</option>
+        <option value="cancelled" {% if selected_status == "cancelled" %}selected{% endif %}>Weather Hold / Cancelled</option>
+      </select>
+    </div>
+
+    <div class="col-md-3 d-flex gap-2">
+      <a href="{% url 'dropzones:timeslot_list' %}" class="btn btn-ghost" style="border:1px solid #2a3448;color:#98a0b3;width:100%;text-align:center;">
+        Reset Filters
+      </a>
+    </div>
+  </form>
+</div>
+
+{% if slots %}
+  <div class="row g-3">
+    {% for slot in slots %}
+      <div class="col-lg-4 col-md-6">
+        <div class="slot-card h-100">
+          <div>
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="badge" style="background:#0b0f17;border:1px solid #232d3f;color:#ff8a3d;font-weight:700;font-size:0.85rem;padding:6px 12px;border-radius:10px;">
+                <i class="bi bi-clock"></i> {{ slot.start_time|time:"h:i A" }}
+              </span>
+              {% if slot.status == 'open' and slot.seats_left > 0 %}
+                <span class="badge" style="background:rgba(34,197,94,0.15);color:#4ade80;border:1px solid rgba(34,197,94,0.3);border-radius:20px;padding:4px 10px;">
+                  Open ({{ slot.seats_left }} left)
+                </span>
+              {% elif slot.status == 'full' or slot.seats_left == 0 %}
+                <span class="badge" style="background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);border-radius:20px;padding:4px 10px;">
+                  Fully Booked
+                </span>
+              {% else %}
+                <span class="badge" style="background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.3);border-radius:20px;padding:4px 10px;">
+                  Weather Cancelled
+                </span>
+              {% endif %}
+            </div>
+
+            <h3 style="font-size:1.1rem;font-weight:800;color:#fff;margin-bottom:4px;">
+              {{ slot.date|date:"l, F j, Y" }}
+            </h3>
+
+            <div style="color:#ff8a3d;font-weight:600;font-size:0.9rem;margin-bottom:6px;">
+              <i class="bi bi-geo-alt-fill"></i> {{ slot.drop_zone.name }}
+            </div>
+
+            <div style="font-size:0.85rem;color:#98a0b3;margin-bottom:1rem;">
+              Instructor: <strong style="color:#e8ecf5;">{{ slot.instructor.name|default:"USPA Jumpmaster TBA" }}</strong>
+            </div>
+          </div>
+
+          <div>
+            {% if slot.status == 'open' and slot.seats_left > 0 %}
+              <a href="{% url 'bookings:create' %}?slot={{ slot.pk }}" class="btn btn-orange" style="width:100%;text-align:center;padding:8px 16px;border-radius:20px;font-weight:700;">
+                Book Flight Slot &rarr;
+              </a>
+            {% else %}
+              <button class="btn btn-ghost" style="width:100%;border:1px solid #2a3448;color:#6b7280;padding:8px 16px;border-radius:20px;" disabled>
+                Slot Unavailable
+              </button>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  {% if is_paginated %}
+    <div class="d-flex justify-content-center align-items-center gap-2 mt-4">
+      {% if page_obj.has_previous %}
+        <a class="btn btn-ghost btn-sm" href="?page={{ page_obj.previous_page_number }}{% if selected_dz %}&dropzone={{ selected_dz }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}" style="border:1px solid #2a3448;color:#fff;">
+          &larr; Previous
+        </a>
+      {% endif %}
+      <span class="text-muted small px-3">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+      {% if page_obj.has_next %}
+        <a class="btn btn-ghost btn-sm" href="?page={{ page_obj.next_page_number }}{% if selected_dz %}&dropzone={{ selected_dz }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}" style="border:1px solid #2a3448;color:#fff;">
+          Next &rarr;
+        </a>
+      {% endif %}
+    </div>
+  {% endif %}
+
+{% else %}
+  <div class="alert alert-info text-center py-4" style="background:#141a26;border:1px solid #232d3f;color:#98a0b3;border-radius:16px;">
+    <h4>No flight slots match your selected filters.</h4>
+    <p class="mb-3">Try choosing another drop zone or reset filters.</p>
+    <a href="{% url 'dropzones:timeslot_list' %}" class="btn btn-orange btn-sm">Show All Slots</a>
+  </div>
+{% endif %}
+{% endblock %}

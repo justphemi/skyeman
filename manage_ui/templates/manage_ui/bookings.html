@@ -1,0 +1,62 @@
+{% extends "manage_ui/_base.html" %}
+{% load humanize %}
+{% block ops_content %}
+
+<div class="ops-header">
+  <div>
+    <div class="crumbs"><a href="{% url 'manage_ui:dashboard' %}">Console</a> / Bookings</div>
+    <h1><i class="bi bi-ticket-perforated text-orange"></i> All Bookings</h1>
+  </div>
+  <div style="font-size:0.82rem;color:var(--muted);">Showing up to 200 most recent</div>
+</div>
+
+<div class="ops-filter">
+  <a class="pill-tab {% if not selected_status %}active{% endif %}" href="?">All ({{ counts.all }})</a>
+  <a class="pill-tab {% if selected_status == 'pending' %}active{% endif %}" href="?status=pending">Pending ({{ counts.pending }})</a>
+  <a class="pill-tab {% if selected_status == 'confirmed' %}active{% endif %}" href="?status=confirmed">Confirmed ({{ counts.confirmed }})</a>
+  <a class="pill-tab {% if selected_status == 'completed' %}active{% endif %}" href="?status=completed">Completed ({{ counts.completed }})</a>
+  <a class="pill-tab {% if selected_status == 'cancelled' %}active{% endif %}" href="?status=cancelled">Cancelled ({{ counts.cancelled }})</a>
+
+  <form method="get" style="display:flex;gap:6px;align-items:center;margin-left:auto;">
+    {% if selected_status %}<input type="hidden" name="status" value="{{ selected_status }}">{% endif %}
+    <input type="date" name="from" value="{{ date_from }}" placeholder="From">
+    <input type="date" name="to" value="{{ date_to }}" placeholder="To">
+    <button type="submit" class="btn btn-orange btn-sm" style="padding:5px 14px;font-size:0.78rem;">Filter</button>
+  </form>
+</div>
+
+<div class="ops-panel" style="padding:0;">
+  {% if bookings %}
+    <table class="ops-table">
+      <thead>
+        <tr>
+          <th>#</th><th>Customer</th><th>Drop Zone</th><th>Date</th><th>Party</th><th>Package</th><th>Status</th><th>Total</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for b in bookings %}
+          <tr>
+            <td>#{{ b.pk }}</td>
+            <td>{{ b.user.username }}<br><small style="color:var(--muted);">{{ b.user.email }}</small></td>
+            <td>{{ b.time_slot.drop_zone.name }}</td>
+            <td>{{ b.time_slot.date|date:"M j, Y" }}<br><small style="color:var(--muted);">{{ b.time_slot.start_time|time:"H:i" }}</small></td>
+            <td>
+              {% if b.group_size > 1 %}
+                <span style="background:rgba(255,106,26,0.12);color:var(--orange);padding:2px 8px;border-radius:10px;font-size:0.72rem;font-weight:700;">×{{ b.group_size }}</span>
+              {% else %}
+                <small style="color:var(--muted);">solo</small>
+              {% endif %}
+            </td>
+            <td>{{ b.package.name }}</td>
+            <td><span class="status-pill {{ b.status }}">{{ b.get_status_display }}</span></td>
+            <td>₦{{ b.total_price|floatformat:0|intcomma }}</td>
+            <td><a class="btn btn-ghost btn-sm" href="{% url 'manage_ui:booking_detail' b.pk %}" style="font-size:0.72rem;padding:3px 10px;">Open</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="ops-empty">No bookings match your filters.</div>
+  {% endif %}
+</div>
+{% endblock %}

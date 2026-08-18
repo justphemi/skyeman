@@ -1,0 +1,288 @@
+{% load static humanize %}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f17" />
+  <meta name="description" content="Skyeman — Premier Skydiving in Lagos, Nigeria. Book your tandem jump, AFF course, or solo skydive with certified instructors.">
+  <title>{% block title %}skyeman. — Skydiving Lagos{% endblock %}</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="{% static 'skyeman_project/css/styles.css' %}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <!-- ===== TOP ANNOUNCEMENT BAR (NO EMOJIS, NO HYPHENS) ===== -->
+  <div style="background: linear-gradient(90deg, #ff6a1a, #ff8a3d); color: #fff; font-size: 0.82rem; font-weight: 600; padding: 6px 1.5rem; text-align: center; letter-spacing: 0.02em;">
+    Experience 12,000 ft Lagos Coastal Jumps | Daily Slots Available in Ikoyi and Lekki | <a href="{% url 'dropzones:timeslot_list' %}" style="color: #fff; text-decoration: underline; font-weight: 700;">View Flight Schedule &rarr;</a>
+  </div>
+
+  <!-- ===== NAVBAR ===== -->
+  <header class="nav-bar" id="mainNavbar">
+    <div class="container main-container">
+      
+      <!-- DESKTOP VIEW: Centered Logo with Nav List directly underneath -->
+      <div class="nav-inner-desktop">
+        <!-- Centered Logo: clean lowercase skyeman. with orange full stop, no icon, no emoji -->
+        <a class="brand" href="{% url 'dropzones:home' %}" aria-label="skyeman home">
+          <span class="brand-name">skyeman</span><span class="brand-dot">.</span>
+        </a>
+
+        <!-- Centered Nav Links underneath the Logo -->
+        <nav class="desktop-nav-links" aria-label="Main Navigation">
+          <a href="{% url 'dropzones:home' %}">Home</a>
+          <a href="{% url 'dropzones:dropzone_list' %}">Dropzones</a>
+          <a href="{% url 'dropzones:package_list' %}">Packages</a>
+          <a href="{% url 'dropzones:timeslot_list' %}">Schedules</a>
+          <a href="{% url 'dropzones:how_it_works' %}">Learn</a>
+          <a href="{% url 'dropzones:gallery' %}">Showcase</a>
+
+          <span style="display:inline-block;width:1px;height:16px;background:rgba(255,255,255,0.15);margin:0 6px;"></span>
+
+          {% if user.is_authenticated %}
+            <a href="{% url 'accounts:dashboard' %}" style="font-weight:700;color:#fff;">Dashboard</a>
+            <a href="{% url 'bookings:my_bookings' %}">My Bookings</a>
+            {% if user.is_staff %}
+              <a href="{% url 'manage_ui:dashboard' %}" style="background:rgba(255,106,26,0.15);color:#ff8a3d;border:1px solid rgba(255,106,26,0.3);padding:4px 12px;">Operations</a>
+              <a href="{% url 'admin:index' %}" style="background:rgba(255,106,26,0.15);color:#ff8a3d;border:1px solid rgba(255,106,26,0.3);padding:4px 12px;">Django Admin</a>
+            {% endif %}
+            <span class="user-chip" style="background:rgba(255,255,255,0.06);padding:4px 12px;border-radius:20px;border:1px solid rgba(255,255,255,0.1);font-size:0.82rem;color:#e8ecf5;">
+              {{ user.first_name|default:user.username }}
+            </span>
+            <form method="post" action="{% url 'accounts:logout' %}" style="display:inline;margin:0;">
+              {% csrf_token %}
+              <button class="btn btn-ghost btn-sm" type="submit" style="padding:4px 12px;font-size:0.8rem;">Log out</button>
+            </form>
+          {% else %}
+            <a class="btn btn-ghost btn-sm" href="{% url 'accounts:login' %}" style="padding:5px 14px;font-size:0.85rem;">Log in</a>
+            <a class="btn btn-orange btn-sm" href="{% url 'accounts:signup' %}" style="padding:5px 16px;font-size:0.85rem;font-weight:700;">Sign up</a>
+          {% endif %}
+        </nav>
+      </div>
+
+      <!-- MOBILE VIEW: Compact Bar with Logo and Hamburger Toggle -->
+      <div class="nav-inner-mobile">
+        <a class="brand" href="{% url 'dropzones:home' %}" aria-label="skyeman home">
+          <span class="brand-name">skyeman</span><span class="brand-dot">.</span>
+        </a>
+
+        <button class="nav-toggle" type="button" id="mobileNavToggle" aria-label="Toggle navigation menu" aria-expanded="false">
+          <i class="bi bi-list" id="toggleIcon"></i>
+        </button>
+      </div>
+
+      <!-- MOBILE DROPDOWN MENU DRAWER -->
+      <div class="mobile-nav-drawer" id="mobileNavDrawer">
+        <a href="{% url 'dropzones:home' %}"><i class="bi bi-house"></i> Home</a>
+        <a href="{% url 'dropzones:dropzone_list' %}"><i class="bi bi-geo-alt"></i> Drop Zones</a>
+        <a href="{% url 'dropzones:package_list' %}"><i class="bi bi-tag"></i> Packages</a>
+        <a href="{% url 'dropzones:timeslot_list' %}"><i class="bi bi-calendar-check"></i> Flight Schedule</a>
+        <a href="{% url 'dropzones:how_it_works' %}"><i class="bi bi-info-circle"></i> How It Works</a>
+        <a href="{% url 'dropzones:gallery' %}"><i class="bi bi-images"></i> Gallery</a>
+
+        <hr style="border-color:rgba(255,255,255,0.1);margin:0.4rem 0;">
+
+        {% if user.is_authenticated %}
+          <a href="{% url 'accounts:dashboard' %}"><i class="bi bi-speedometer2 text-orange"></i> Dashboard</a>
+          <a href="{% url 'bookings:my_bookings' %}"><i class="bi bi-ticket-perforated"></i> My Bookings</a>
+          {% if user.is_staff %}
+            <a href="{% url 'manage_ui:dashboard' %}"><i class="bi bi-speedometer2 text-orange"></i> Operations Console</a>
+            <a href="{% url 'admin:index' %}"><i class="bi bi-shield-lock text-orange"></i> Django Admin</a>
+          {% endif %}
+          <div class="user-chip" style="background:rgba(255,255,255,0.06);margin:4px 0;">
+            <i class="bi bi-person-circle"></i> Logged in as {{ user.first_name|default:user.username }}
+          </div>
+          <form method="post" action="{% url 'accounts:logout' %}" style="margin-top:4px;">
+            {% csrf_token %}
+            <button class="btn btn-ghost" type="submit" style="width:100%;">Log out</button>
+          </form>
+        {% else %}
+          <div class="d-flex gap-2 mt-2">
+            <a class="btn btn-ghost" href="{% url 'accounts:login' %}" style="flex:1;text-align:center;justify-content:center;">Log in</a>
+            <a class="btn btn-orange" href="{% url 'accounts:signup' %}" style="flex:1;text-align:center;justify-content:center;">Sign up</a>
+          </div>
+        {% endif %}
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ===== FLASH NOTIFICATIONS ===== -->
+  {% if messages %}
+    <div class="container main-container mt-3">
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show" role="alert" style="background:#141a26;border:1px solid {% if message.tags == 'success' %}#22c55e{% elif message.tags == 'error' %}#ef4444{% else %}#ff6a1a{% endif %};color:#e8ecf5;border-radius:12px;display:flex;align-items:center;justify-content:space-between;padding:12px 18px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            {% if message.tags == 'success' %}
+              <i class="bi bi-check-circle-fill" style="color:#22c55e;font-size:1.1rem;"></i>
+            {% elif message.tags == 'error' %}
+              <i class="bi bi-exclamation-triangle-fill" style="color:#ef4444;font-size:1.1rem;"></i>
+            {% else %}
+              <i class="bi bi-info-circle-fill" style="color:#ff6a1a;font-size:1.1rem;"></i>
+            {% endif %}
+            <span>{{ message }}</span>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <!-- ===== MAIN CONTENT WRAPPER WITH GENEROUS RESPONSIVE MARGINS ===== -->
+  <main class="page-content">
+    <div class="container main-container">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <!-- ===== FOOTER ===== -->
+  {% block marketing_footer %}
+  <footer class="footer" style="background:#080b11;border-top:1px solid #1f2737;padding:3.5rem 0 2rem;margin-top:4rem;">
+    <div class="container main-container">
+      <div class="row g-4 mb-4">
+        <div class="col-lg-4 col-md-6">
+          <div class="brand" style="font-size:1.8rem;font-weight:800;justify-content:flex-start;">
+            <span class="brand-name">skyeman</span><span class="brand-dot">.</span>
+          </div>
+          <p class="muted mt-2" style="font-size:0.9rem;line-height:1.6;color:#98a0b3;">
+            West Africa premier tandem skydiving and accelerated freefall operations center based in Lagos Nigeria. USPA certified flight operations.
+          </p>
+          <div style="display:flex;gap:12px;margin-top:1rem;">
+            <a href="https://instagram.com" target="_blank" rel="noopener" class="btn btn-ghost" style="padding:6px 10px;border-radius:50%;" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+            <a href="https://youtube.com" target="_blank" rel="noopener" class="btn btn-ghost" style="padding:6px 10px;border-radius:50%;" aria-label="YouTube"><i class="bi bi-youtube"></i></a>
+            <a href="https://twitter.com" target="_blank" rel="noopener" class="btn btn-ghost" style="padding:6px 10px;border-radius:50%;" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
+          </div>
+        </div>
+
+        <div class="col-lg-2 col-md-3 col-6">
+          <h6 style="color:#fff;font-weight:700;font-size:0.95rem;margin-bottom:1rem;text-transform:uppercase;letter-spacing:0.05em;">Skydiving</h6>
+          <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;font-size:0.9rem;">
+            <li><a href="{% url 'dropzones:dropzone_list' %}" class="muted">Drop Zones</a></li>
+            <li><a href="{% url 'dropzones:package_list' %}" class="muted">Jump Packages</a></li>
+            <li><a href="{% url 'dropzones:timeslot_list' %}" class="muted">Flight Schedule</a></li>
+            <li><a href="{% url 'bookings:create' %}" class="muted">Book a Jump</a></li>
+            <li><a href="{% url 'dropzones:gallery' %}" class="muted">Photo Gallery</a></li>
+          </ul>
+        </div>
+
+        <div class="col-lg-2 col-md-3 col-6">
+          <h6 style="color:#fff;font-weight:700;font-size:0.95rem;margin-bottom:1rem;text-transform:uppercase;letter-spacing:0.05em;">Company</h6>
+          <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;font-size:0.9rem;">
+            <li><a href="{% url 'dropzones:about' %}" class="muted">About Skyeman</a></li>
+            <li><a href="{% url 'dropzones:how_it_works' %}" class="muted">How It Works</a></li>
+            <li><a href="{% url 'dropzones:faq' %}" class="muted">FAQ and Safety</a></li>
+            <li><a href="{% url 'dropzones:blog' %}" class="muted">Stories and Blog</a></li>
+            <li><a href="{% url 'dropzones:contact' %}" class="muted">Contact Us</a></li>
+          </ul>
+        </div>
+
+        <div class="col-lg-4 col-md-12">
+          <h6 style="color:#fff;font-weight:700;font-size:0.95rem;margin-bottom:1rem;text-transform:uppercase;letter-spacing:0.05em;">Lagos Airfields</h6>
+          <div style="background:#141a26;border:1px solid #232d3f;border-radius:12px;padding:1.25rem;">
+            <div style="font-size:0.9rem;color:#e8ecf5;font-weight:600;"><i class="bi bi-geo-alt-fill text-orange"></i> Ikoyi, Lekki Beach, Victoria Island</div>
+            <div style="font-size:0.82rem;color:#98a0b3;margin-top:6px;line-height:1.5;">Flights operate Wednesday through Sunday from sunrise to sunset. Weather forecast monitoring active.</div>
+            <div class="mt-3">
+              <a href="{% url 'dropzones:timeslot_list' %}" class="btn btn-orange btn-sm" style="width:100%;text-align:center;">Check Upcoming Flight Slots</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COPYRIGHT LINE (NO EMOJIS, NO HYPHENS) -->
+      <div style="border-top:1px solid #1f2737;padding-top:1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;font-size:0.82rem;color:#6b7280;">
+        <div>&copy; {% now "Y" %} Skyeman Skydiving Operations Lagos. All rights reserved. Simulated payment platform.</div>
+        <div style="display:flex;gap:1.2rem;">
+          <a href="{% url 'dropzones:privacy' %}" class="muted">Privacy Policy</a>
+          <a href="{% url 'dropzones:terms' %}" class="muted">Terms of Service</a>
+          <a href="{% url 'dropzones:cookies' %}" class="muted">Cookie Settings</a>
+          {% if user.is_staff %}
+            <a href="{% url 'manage_ui:dashboard' %}" class="text-orange" style="font-weight:600;"><i class="bi bi-speedometer2"></i> Operations Console</a>
+            <a href="{% url 'admin:index' %}" class="text-orange" style="font-weight:600;"><i class="bi bi-lock-fill"></i> Django Admin</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </footer>
+  {% endblock marketing_footer %}
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Reveal-on-scroll for .scroll-animate elements. Without this JS,
+    // CSS sets opacity:0 and the cards stay invisible. We add .visible
+    // when the element enters the viewport (with a graceful fallback
+    // that reveals everything after 1.5s if the observer never fires).
+    (function() {
+      const targets = document.querySelectorAll('.scroll-animate');
+      if (!targets.length) return;
+
+      // Fallback: if observer support is missing or page is already at top,
+      // still reveal everything within 1.5s so users are never stuck.
+      const fallback = setTimeout(function() {
+        targets.forEach(function(el) { el.classList.add('visible'); });
+      }, 1500);
+
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(function(entries) {
+          entries.forEach(function(entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              io.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.05, rootMargin: '0px 0px -40px 0px' });
+        targets.forEach(function(el) { io.observe(el); });
+        clearTimeout(fallback);
+      }
+    })();
+  </script>
+  <script>
+    // Responsive Mobile Menu Drawer Toggle
+    (function() {
+      var toggleBtn = document.getElementById('mobileNavToggle');
+      var drawer = document.getElementById('mobileNavDrawer');
+      var toggleIcon = document.getElementById('toggleIcon');
+
+      if (toggleBtn && drawer) {
+        toggleBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          var isOpen = drawer.classList.toggle('is-open');
+          toggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+          if (toggleIcon) {
+            if (isOpen) {
+              toggleIcon.className = 'bi bi-x-lg';
+            } else {
+              toggleIcon.className = 'bi bi-list';
+            }
+          }
+        });
+
+        // Close drawer when clicking outside
+        document.addEventListener('click', function(e) {
+          if (drawer.classList.contains('is-open') && !drawer.contains(e.target) && !toggleBtn.contains(e.target)) {
+            drawer.classList.remove('is-open');
+            toggleBtn.setAttribute('aria-expanded', 'false');
+            if (toggleIcon) toggleIcon.className = 'bi bi-list';
+          }
+        });
+
+        // Close drawer on link click
+        var links = drawer.querySelectorAll('a, button');
+        links.forEach(function(l) {
+          l.addEventListener('click', function() {
+            drawer.classList.remove('is-open');
+            toggleBtn.setAttribute('aria-expanded', 'false');
+            if (toggleIcon) toggleIcon.className = 'bi bi-list';
+          });
+        });
+      }
+    })();
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>

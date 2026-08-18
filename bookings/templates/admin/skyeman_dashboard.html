@@ -1,0 +1,243 @@
+{% extends "admin/base_site.html" %}
+{% load static humanize %}
+
+{% block title %}{{ title }} | {{ site_title|default:"Skyeman admin" }}{% endblock %}
+
+{% block extrastyle %}
+<style>
+  /* Custom dashboard styles — match the front-end dark/orange theme */
+  :root {
+    --admin-bg: #0b0f17;
+    --admin-surface: #141a26;
+    --admin-line: #2a3448;
+    --admin-text: #e8ecf5;
+    --admin-muted: #98a0b3;
+    --admin-orange: #ff6a1a;
+  }
+  .sky-dash { max-width: 1200px; margin: 0 auto; padding: 0 1rem; }
+  .sky-dash .kpi-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+    gap: 1rem; 
+    margin: 1.5rem 0; 
+  }
+  .sky-dash .kpi {
+    background: var(--admin-surface);
+    border: 1px solid var(--admin-line);
+    border-radius: var(--r-lg, 20px);
+    padding: 1.25rem 1.5rem;
+    transition: all 0.25s ease;
+  }
+  .sky-dash .kpi:hover {
+    border-color: var(--admin-orange);
+    transform: translateY(-2px);
+  }
+  .sky-dash .kpi .num { 
+    font-size: 2rem; 
+    font-weight: 800; 
+    color: var(--admin-orange); 
+  }
+  .sky-dash .kpi .lbl { 
+    color: var(--admin-muted); 
+    font-size: 0.85rem; 
+    margin-top: 4px; 
+  }
+  .sky-dash .grid-2 { 
+    display: grid; 
+    grid-template-columns: 1.2fr 1fr; 
+    gap: 1.5rem; 
+  }
+  @media (max-width: 900px) { 
+    .sky-dash .grid-2 { grid-template-columns: 1fr; } 
+  }
+  .sky-dash .panel {
+    background: var(--admin-surface);
+    border: 1px solid var(--admin-line);
+    border-radius: var(--r-lg, 20px);
+    padding: 1.25rem 1.5rem;
+  }
+  .sky-dash .panel h3 { 
+    margin: 0 0 1rem; 
+    font-size: 1rem; 
+    color: var(--admin-text);
+    font-weight: 700;
+  }
+  .sky-dash table { 
+    width: 100%; 
+    border-collapse: collapse; 
+  }
+  .sky-dash th, .sky-dash td { 
+    padding: 0.6rem 0.5rem; 
+    text-align: left; 
+    border-bottom: 1px solid var(--admin-line); 
+    font-size: 0.85rem; 
+  }
+  .sky-dash th { 
+    color: var(--admin-muted); 
+    font-weight: 600; 
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .sky-dash .pill {
+    display: inline-block; 
+    padding: 2px 12px; 
+    border-radius: 999px; 
+    font-size: 0.7rem; 
+    font-weight: 600;
+  }
+  .sky-dash .pill-open      { color: #4ade80; background: rgba(74,222,128,0.12); }
+  .sky-dash .pill-confirmed { color: #4ade80; background: rgba(74,222,128,0.12); }
+  .sky-dash .pill-pending   { color: #fbbf24; background: rgba(251,191,36,0.12); }
+  .sky-dash .pill-cancelled { color: #f87171; background: rgba(248,113,113,0.12); }
+  .sky-dash .pill-completed { color: #4ea3ff; background: rgba(78,163,255,0.12); }
+  .sky-dash .welcome { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 0.5rem; 
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  .sky-dash .welcome h1 { 
+    font-size: 1.6rem; 
+    margin: 0; 
+    color: var(--admin-text);
+  }
+  .sky-dash .sub { 
+    color: var(--admin-muted); 
+  }
+  .sky-dash .quick { 
+    display: flex; 
+    gap: 0.5rem; 
+    flex-wrap: wrap; 
+  }
+  .sky-dash .btn { 
+    display: inline-flex; 
+    align-items: center;
+    gap: 6px;
+    padding: 0.6rem 1.2rem; 
+    border-radius: 999px; 
+    text-decoration: none; 
+    font-weight: 600; 
+    font-size: 0.82rem; 
+    transition: all 0.25s ease;
+  }
+  .sky-dash .btn-orange { 
+    background: var(--admin-orange); 
+    color: #fff; 
+  }
+  .sky-dash .btn-orange:hover { 
+    background: #ff8a3d; 
+    transform: translateY(-1px);
+  }
+  .sky-dash .btn-ghost { 
+    background: transparent; 
+    color: var(--admin-text); 
+    border: 1px solid var(--admin-line); 
+  }
+  .sky-dash .btn-ghost:hover { 
+    background: var(--admin-surface); 
+  }
+  .sky-dash td a {
+    color: var(--admin-orange);
+    text-decoration: none;
+  }
+  .sky-dash td a:hover {
+    color: #ff8a3d;
+    text-decoration: underline;
+  }
+</style>
+{% endblock %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+<div class="sky-dash">
+  <div class="welcome">
+    <div>
+      <h1>Operations dashboard</h1>
+      <div class="sub">{{ today|date:"l, F j Y" }}</div>
+    </div>
+    <div class="quick">
+      <a class="btn btn-orange" href="{% url 'admin:bookings_booking_changelist' %}">All bookings</a>
+      <a class="btn btn-ghost" href="{% url 'admin:bookings_payment_changelist' %}">Payments</a>
+      <a class="btn btn-ghost" href="{% url 'admin:dropzones_timeslot_changelist' %}">Time slots</a>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-grid">
+    <div class="kpi">
+      <div class="num">{{ kpis.today_count }}</div>
+      <div class="lbl">Bookings today</div>
+    </div>
+    <div class="kpi">
+      <div class="num">{{ kpis.week_count }}</div>
+      <div class="lbl">Bookings next 7 days</div>
+    </div>
+    <div class="kpi">
+      <div class="num">{{ kpis.cancelled_today }}</div>
+      <div class="lbl">Cancellations today</div>
+    </div>
+    <div class="kpi">
+      <div class="num">₦{{ kpis.revenue_30d|floatformat:0|intcomma }}</div>
+      <div class="lbl">Simulated revenue (30d)</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="panel">
+      <h3>Recent bookings</h3>
+      <table>
+        <thead>
+          <tr><th>ID</th><th>Customer</th><th>Drop zone</th><th>Package</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          {% for b in recent_bookings %}
+            <tr>
+              <td><a href="{% url 'admin:bookings_booking_change' b.id %}">#{{ b.id }}</a></td>
+              <td>{{ b.user.username }}</td>
+              <td>{{ b.time_slot.drop_zone.name }}</td>
+              <td>{{ b.package.name }}</td>
+              <td>
+                {% if b.status == "confirmed" %}<span class="pill pill-confirmed">{{ b.get_status_display }}</span>
+                {% elif b.status == "pending" %}<span class="pill pill-pending">{{ b.get_status_display }}</span>
+                {% elif b.status == "cancelled" %}<span class="pill pill-cancelled">{{ b.get_status_display }}</span>
+                {% else %}<span class="pill pill-completed">{{ b.get_status_display }}</span>{% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="5" style="color:var(--admin-muted);padding:1rem;text-align:center;">No bookings yet.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <h3>Upcoming slots (next 7 days)</h3>
+      <table>
+        <thead>
+          <tr><th>Date</th><th>Time</th><th>Drop zone</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+          {% for s in upcoming_slots %}
+            <tr>
+              <td>{{ s.date|date:"M d" }}</td>
+              <td>{{ s.start_time|time:"H:i" }}</td>
+              <td>{{ s.drop_zone.name }}</td>
+              <td>
+                {% if s.status == "open" %}<span class="pill pill-open">{{ s.get_status_display }}</span>
+                {% elif s.status == "full" %}<span class="pill pill-pending">{{ s.get_status_display }}</span>
+                {% else %}<span class="pill pill-cancelled">{{ s.get_status_display }}</span>{% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="4" style="color:var(--admin-muted);padding:1rem;text-align:center;">No upcoming slots.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

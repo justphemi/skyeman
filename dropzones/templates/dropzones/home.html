@@ -1,0 +1,425 @@
+{% extends "skyeman_project/base.html" %}
+{% load static humanize %}
+{% block title %}Skyeman — Skydiving in Lagos{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* ===== HERO - CENTERED & BALANCED ===== */
+  .hero {
+    position: relative;
+    border-radius: var(--r-lg);
+    overflow: hidden;
+    min-height: clamp(420px, 65vh, 580px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 3rem;
+    box-shadow: var(--shadow-lg);
+    background: var(--surface);
+  }
+  
+  .hero .hero-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('https://i.pinimg.com/1200x/f3/40/4e/f3404e93fd13c3b360c59871b5a22603.jpg') center/cover no-repeat;
+    transform: scale(1.05);
+    animation: heroFloat 20s ease-in-out infinite alternate;
+  }
+  
+  @keyframes heroFloat {
+    0% { transform: scale(1.05) translateX(-1.5%) translateY(-1.5%); }
+    50% { transform: scale(1.1) translateX(1.5%) translateY(1%); }
+    100% { transform: scale(1.05) translateX(-0.5%) translateY(2%); }
+  }
+  
+  .hero .hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(11,15,23,0.8) 0%, rgba(11,15,23,0.3) 60%, rgba(11,15,23,0.1) 100%);
+    z-index: 1;
+  }
+  
+  /* Glow orbs */
+  .hero .glow-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.2;
+    pointer-events: none;
+    z-index: 1;
+    animation: orbFloat 10s ease-in-out infinite alternate;
+  }
+  .hero .glow-orb-1 {
+    width: 400px;
+    height: 400px;
+    background: var(--orange);
+    top: -100px;
+    right: -100px;
+    animation-delay: 0s;
+  }
+  .hero .glow-orb-2 {
+    width: 300px;
+    height: 300px;
+    background: var(--blue);
+    bottom: -50px;
+    left: -50px;
+    animation-delay: 5s;
+  }
+  
+  @keyframes orbFloat {
+    0% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(30px, -30px) scale(1.1); }
+    100% { transform: translate(-20px, 20px) scale(0.9); }
+  }
+  
+  .hero .hero-body {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    max-width: 720px;
+    padding: clamp(1.5rem, 4vw, 3rem);
+    width: 100%;
+  }
+  
+  .hero .hero-body .eyebrow {
+    color: var(--orange-2);
+    font-size: clamp(0.65rem, 0.9vw, 0.75rem);
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+    display: inline-block;
+    background: rgba(255, 106, 26, 0.12);
+    padding: 4px 18px;
+    border-radius: var(--r-pill);
+    border: 1px solid rgba(255, 106, 26, 0.15);
+    animation: fadeUp 0.8s ease forwards;
+  }
+  
+  .hero .hero-body h1 {
+    color: #fff;
+    font-size: clamp(2.2rem, 6vw, 4rem);
+    font-weight: 800;
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.03em;
+    line-height: 1.08;
+    animation: fadeUp 0.8s ease 0.1s forwards;
+    opacity: 0;
+  }
+  .hero .hero-body h1 .highlight {
+    color: var(--orange);
+  }
+  
+  .hero .hero-body p {
+    color: rgba(255,255,255,0.75);
+    font-size: clamp(1rem, 1.3vw, 1.2rem);
+    margin: 0 auto 1.5rem;
+    max-width: 520px;
+    line-height: 1.6;
+    animation: fadeUp 0.8s ease 0.2s forwards;
+    opacity: 0;
+  }
+  
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(25px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .hero .hero-body .hero-ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+    animation: fadeUp 0.8s ease 0.3s forwards;
+    opacity: 0;
+  }
+  
+  .hero .hero-body .hero-ctas .btn {
+    min-width: 160px;
+    justify-content: center;
+  }
+  
+  .hero .hero-body .hero-stats {
+    display: flex;
+    justify-content: center;
+    gap: clamp(2rem, 5vw, 4rem);
+    margin-top: 1.75rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    animation: fadeUp 0.8s ease 0.4s forwards;
+    opacity: 0;
+  }
+  
+  .hero .hero-body .hero-stats .stat-item {
+    text-align: center;
+  }
+  
+  .hero .hero-body .hero-stats .stat-item .num {
+    font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+    font-weight: 800;
+    color: var(--orange);
+    line-height: 1.2;
+  }
+  
+  .hero .hero-body .hero-stats .stat-item .lbl {
+    font-size: clamp(0.6rem, 0.7vw, 0.75rem);
+    color: rgba(255,255,255,0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  
+  @media (max-width: 600px) {
+    .hero {
+      min-height: 380px;
+      border-radius: var(--r-md);
+      margin-bottom: 1.5rem;
+    }
+    .hero .hero-body {
+      padding: 1.25rem;
+    }
+    .hero .hero-body h1 {
+      font-size: 1.8rem;
+    }
+    .hero .hero-body p {
+      font-size: 0.9rem;
+    }
+    .hero .hero-body .hero-ctas .btn {
+      min-width: 130px;
+      font-size: 0.85rem;
+      padding: 10px 18px;
+    }
+    .hero .hero-body .hero-stats {
+      gap: 1.25rem;
+      flex-wrap: wrap;
+    }
+    .hero .glow-orb-1 {
+      width: 200px;
+      height: 200px;
+      top: -50px;
+      right: -50px;
+    }
+    .hero .glow-orb-2 {
+      width: 150px;
+      height: 150px;
+      bottom: -30px;
+      left: -30px;
+    }
+  }
+  
+  @media (max-width: 400px) {
+    .hero .hero-body .hero-ctas {
+      flex-direction: column;
+      align-items: center;
+    }
+    .hero .hero-body .hero-ctas .btn {
+      width: 100%;
+      min-width: unset;
+    }
+    .hero .hero-body .hero-stats {
+      gap: 1rem;
+    }
+  }
+
+  /* ===== CARDS IMPROVEMENTS ===== */
+  .card .card-img {
+    height: clamp(180px, 25vw, 220px);
+  }
+  
+  .card .card-body .price {
+    font-size: clamp(1.2rem, 1.8vw, 1.5rem);
+  }
+  
+  /* ===== TESTIMONIALS ===== */
+  .testimonial {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    padding: clamp(1rem, 2vw, 1.5rem);
+    transition: var(--transition);
+  }
+  .testimonial:hover {
+    border-color: var(--orange);
+    transform: translateY(-3px);
+  }
+  .testimonial .stars {
+    color: var(--amber);
+    font-size: clamp(0.8rem, 1vw, 1rem);
+    margin-bottom: 0.4rem;
+  }
+  .testimonial .quote {
+    font-size: clamp(0.85rem, 0.95vw, 0.95rem);
+    color: var(--text);
+    font-style: italic;
+    line-height: 1.5;
+    margin-bottom: 0.75rem;
+  }
+  .testimonial .author {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .testimonial .author .avatar {
+    width: clamp(32px, 3.5vw, 40px);
+    height: clamp(32px, 3.5vw, 40px);
+    border-radius: 50%;
+    background: var(--orange-dim);
+    color: var(--orange);
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    font-size: clamp(0.8rem, 0.9vw, 0.95rem);
+  }
+  .testimonial .author .name {
+    font-weight: 600;
+    font-size: clamp(0.82rem, 0.9vw, 0.9rem);
+    color: var(--text);
+  }
+  .testimonial .author .role {
+    font-size: clamp(0.65rem, 0.7vw, 0.75rem);
+    color: var(--muted);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- ===== HERO - CENTERED ===== -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-overlay"></div>
+  <div class="glow-orb glow-orb-1"></div>
+  <div class="glow-orb glow-orb-2"></div>
+  <div class="hero-body">
+    <span class="eyebrow">Welcome to Skyeman</span>
+    <h1>Skydive Lagos,<br><span class="highlight">the easy way.</span></h1>
+    <p>Pick a drop zone, choose a date, meet your instructor. No paperwork, no stress — just jump.</p>
+    <div class="hero-ctas">
+      <a class="btn btn-orange btn-lg" href="{% url 'dropzones:dropzone_list' %}">Find a Drop Zone</a>
+      <a class="btn btn-ghost btn-lg" href="{% url 'dropzones:package_list' %}">See Packages</a>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item">
+        <div class="num">3</div>
+        <div class="lbl">Drop Zones</div>
+      </div>
+      <div class="stat-item">
+        <div class="num">12</div>
+        <div class="lbl">Instructors</div>
+      </div>
+      <div class="stat-item">
+        <div class="num">2,000+</div>
+        <div class="lbl">Jumps Completed</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== DROP ZONES ===== -->
+<div class="page-head">
+  <div class="eyebrow">Our locations</div>
+  <div class="flex-between">
+    <h2>Dropzones</h2>
+    <a class="text-orange" href="{% url 'dropzones:dropzone_list' %}" style="font-weight:600;">View all →</a>
+  </div>
+</div>
+
+<div class="grid grid-3">
+  {% for dz in drop_zones %}
+    <a class="card-link scroll-animate" href="{% url 'dropzones:dropzone_detail' dz.pk %}">
+      <div class="card">
+        {% if dz.image_url %}
+          <img class="card-img" src="{{ dz.image_url }}" alt="{{ dz.name }}" loading="lazy" onerror="this.onerror=null;this.src='https://i.pinimg.com/1200x/f3/40/4e/f3404e93fd13c3b360c59871b5a22603.jpg'">
+        {% else %}
+          <img class="card-img" src="https://i.pinimg.com/736x/4e/aa/f5/4eaaf59d2dbeb533133004bbc09f8c0c.jpg" alt="{{ dz.name }}" loading="lazy">
+        {% endif %}
+        <div class="card-body">
+          <span class="pill"><i class="bi bi-geo-alt"></i> {{ dz.city }}</span>
+          <h3 class="mt-2 dz-name">{{ dz.name }}</h3>
+          <p class="dz-desc">{{ dz.description|truncatewords:18 }}</p>
+          <div class="card-actions">
+            <span class="card-cta">See more <i class="bi bi-arrow-right"></i></span>
+          </div>
+        </div>
+      </div>
+    </a>
+  {% empty %}
+    <div class="empty">No drop zones yet — run <code>python manage.py seed</code>.</div>
+  {% endfor %}
+</div>
+
+<!-- ===== PACKAGES ===== -->
+<div class="page-head mt-section">
+  <div class="eyebrow">Pick a flight</div>
+  <div class="flex-between">
+    <h2>Jump packages</h2>
+    <a class="text-orange" href="{% url 'dropzones:package_list' %}" style="font-weight:600;">View all →</a>
+  </div>
+</div>
+
+<div class="grid grid-4">
+  {% for pkg in packages %}
+    <div class="card scroll-animate scroll-animate-delay-{{ forloop.counter|add:1 }}">
+      <div class="card-body">
+        <h3 class="mt-2">{{ pkg.get_name_display }}</h3>
+        <div class="price">₦{{ pkg.price|floatformat:0|intcomma }}</div>
+        <p>{{ pkg.description|truncatewords:14 }}</p>
+        <div class="card-actions">
+          <a class="btn btn-outline btn-sm btn-block" href="{% url 'dropzones:package_list' %}">Details</a>
+        </div>
+      </div>
+    </div>
+  {% empty %}
+    <div class="empty">No packages yet.</div>
+  {% endfor %}
+</div>
+
+<!-- ===== TESTIMONIALS ===== -->
+<div class="page-head mt-section">
+  <div class="eyebrow">What people say</div>
+  <h2>Real stories from real jumpers</h2>
+</div>
+
+<div class="grid grid-3">
+  <div class="testimonial scroll-animate scroll-animate-delay-1">
+    <div class="stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></div>
+    <p class="quote">"Best decision I made in 2024. The team at Skyeman made me feel safe from the moment I arrived."</p>
+    <div class="author">
+      <div class="avatar">A</div>
+      <div><div class="name">Amara O.</div><div class="role">First-time jumper, Ikoyi</div></div>
+    </div>
+  </div>
+  <div class="testimonial scroll-animate scroll-animate-delay-2">
+    <div class="stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></div>
+    <p class="quote">"Professional, fun, and absolutely exhilarating. I've already booked my second jump."</p>
+    <div class="author">
+      <div class="avatar">K</div>
+      <div><div class="name">Kofi A.</div><div class="role">AFF student, Lekki</div></div>
+    </div>
+  </div>
+  <div class="testimonial scroll-animate scroll-animate-delay-3">
+    <div class="stars"><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i></div>
+    <p class="quote">"The view over Lagos is incredible. Best way to see the city — from 10,000 feet."</p>
+    <div class="author">
+      <div class="avatar">Z</div>
+      <div><div class="name">Zainab M.</div><div class="role">Tandem jumper, Victoria Island</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== NEWSLETTER ===== -->
+<div class="mt-section scroll-animate">
+  <div class="newsletter-section">
+    <h2>Ready for your next adventure?</h2>
+    <p>Subscribe to the Skyeman Journal for stories, tips, and exclusive offers.</p>
+    <div class="newsletter-form">
+      <input type="email" class="form-control" placeholder="Your email address" aria-label="Email address">
+      <button class="btn btn-orange">Subscribe</button>
+    </div>
+  </div>
+</div>
+{% endblock %}

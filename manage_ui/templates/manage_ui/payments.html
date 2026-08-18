@@ -1,0 +1,53 @@
+{% extends "manage_ui/_base.html" %}
+{% load humanize %}
+{% block ops_content %}
+
+<div class="ops-header">
+  <div>
+    <div class="crumbs"><a href="{% url 'manage_ui:dashboard' %}">Console</a> / Payments</div>
+    <h1><i class="bi bi-credit-card text-orange"></i> Payments</h1>
+  </div>
+  <div style="font-size:0.82rem;color:var(--muted);">Showing up to 200 most recent</div>
+</div>
+
+<div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));">
+  <div class="kpi-card accent">
+    <i class="bi bi-cash-stack kpi-icon"></i>
+    <div class="kpi-label">Total Paid (filtered)</div>
+    <div class="kpi-value">₦{{ total_paid|floatformat:0|intcomma }}</div>
+    <div class="kpi-sub">Sum of successful payments</div>
+  </div>
+</div>
+
+<div class="ops-filter">
+  <a class="pill-tab {% if not selected_status %}active{% endif %}" href="?">All</a>
+  <a class="pill-tab {% if selected_status == 'paid' %}active{% endif %}" href="?status=paid">Paid</a>
+  <a class="pill-tab {% if selected_status == 'pending' %}active{% endif %}" href="?status=pending">Pending</a>
+  <a class="pill-tab {% if selected_status == 'refunded' %}active{% endif %}" href="?status=refunded">Refunded</a>
+  <a class="pill-tab {% if selected_status == 'failed' %}active{% endif %}" href="?status=failed">Failed</a>
+</div>
+
+<div class="ops-panel" style="padding:0;">
+  {% if payments %}
+    <table class="ops-table">
+      <thead><tr><th>#</th><th>Booking</th><th>Customer</th><th>Drop Zone</th><th>Amount</th><th>Method</th><th>Status</th><th>Paid at</th></tr></thead>
+      <tbody>
+        {% for p in payments %}
+          <tr>
+            <td>#{{ p.pk }}</td>
+            <td>#{{ p.booking.pk }}</td>
+            <td>{{ p.booking.user.username }}</td>
+            <td>{{ p.booking.time_slot.drop_zone.name }}</td>
+            <td><strong style="color:var(--orange);">₦{{ p.amount|floatformat:0|intcomma }}</strong></td>
+            <td><small>{{ p.get_method_display }}</small></td>
+            <td><span class="status-pill {{ p.status }}">{{ p.get_status_display }}</span></td>
+            <td><small>{{ p.paid_at|date:"M j, H:i"|default:"—" }}</small></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="ops-empty">No payments yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

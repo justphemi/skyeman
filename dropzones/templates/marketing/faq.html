@@ -1,0 +1,71 @@
+{% extends "skyeman_project/base.html" %}
+{% load static %}
+{% block title %}FAQ — Skyeman{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div class="eyebrow">FAQ</div>
+  <h1>Frequently asked questions</h1>
+  <p>Quick answers to the most common things people ask before booking.</p>
+</div>
+
+<div class="grid grid-2">
+  <div class="card">
+    <div class="card-body">
+      <h3 class="mt-0">Do I need experience to tandem skydive?</h3>
+      <p class="muted mb-0">No. Tandem jumps are designed for first-timers — you're attached to a certified instructor the whole time.</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <h3 class="mt-0">What's the minimum age?</h3>
+      <p class="muted mb-0">18 for tandem and AFF. 16 for Solo with parental consent. Under-18s need a parent or guardian present.</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <h3 class="mt-0">Is there a weight limit?</h3>
+      <p class="muted mb-0">Yes — it varies by package. Tandem is up to 100&nbsp;kg, AFF up to 95&nbsp;kg. The booking form enforces this for you.</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <h3 class="mt-0">What if I need to cancel?</h3>
+      <p class="muted mb-0">Cancel any time before the jump for a full refund. Use your dashboard — no emails, no phone calls.</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <h3 class="mt-0">Can I reschedule to a different day?</h3>
+      <p class="muted mb-0">Yes. Pick any open slot at the same drop zone, up to the day before your jump. Free, no questions asked.</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <h3 class="mt-0">What should I wear?</h3>
+      <p class="muted mb-0">Comfortable clothes and trainers. We supply the jumpsuit, harness, goggles, and gloves.</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <h3 class="mt-0">What happens if the weather is bad?</h3>
+      <p class="muted mb-0">We cancel the slot and you'll be notified. Your booking moves to "weather cancelled" and you can rebook for free.</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <h3 class="mt-0">Are the payments real?</h3>
+      <p class="muted mb-0">No — this is a university project. All payments are simulated. No real card details are collected or stored.</p>
+    </div>
+  </div>
+</div>
+
+<div class="mt-section text-center">
+  <h3>Still have questions?</h3>
+  <p class="muted" style="max-width:400px;margin:0 auto 1rem;">Our AI assistant is ready to help, or you can reach out directly.</p>
+  <div class="actions" style="justify-content:center;">
+    <button class="btn btn-orange" onclick="document.getElementById('chatToggle').click();">Ask the assistant</button>
+    <a class="btn btn-ghost" href="{% url 'dropzones:contact' %}">Contact us</a>
+  </div>
+</div>
+{% endblock %}

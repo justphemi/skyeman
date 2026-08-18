@@ -1,0 +1,78 @@
+{% extends "skyeman_project/base.html" %}
+{% load humanize %}
+{% block title %}Reschedule Jump #{{ booking.id }} — Skyeman{% endblock %}
+
+{% block extra_head %}
+<style>
+  .reschedule-wrap {
+    max-width: 650px;
+    margin: 0 auto;
+  }
+  .reschedule-card {
+    background: #141a26;
+    border: 1px solid #232d3f;
+    border-radius: 20px;
+    padding: clamp(1.2rem, 3vw, 2rem);
+  }
+  .form-control, .form-select {
+    background: #0b0f17 !important;
+    border: 1.5px solid #2a3448 !important;
+    color: #fff !important;
+    border-radius: 10px !important;
+    padding: 12px 16px !important;
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: #ff6a1a !important;
+    box-shadow: 0 0 0 3px rgba(255,106,26,0.2) !important;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="reschedule-wrap py-4">
+  <div class="page-head mb-4 text-center">
+    <span class="eyebrow" style="background:rgba(255,106,26,0.12);color:#ff8a3d;padding:4px 14px;border-radius:20px;font-size:0.8rem;font-weight:700;text-transform:uppercase;">Reschedule</span>
+    <h1 class="mt-2" style="font-weight:800;font-size:clamp(1.8rem, 4vw, 2.3rem);">Change Flight Slot</h1>
+    <p class="muted" style="color:#98a0b3;">Move Booking #{{ booking.id }} to any available open slot.</p>
+  </div>
+
+  <div class="reschedule-card">
+    <div style="background:#0b0f17;border:1px solid #232d3f;border-radius:12px;padding:1rem;margin-bottom:1.5rem;">
+      <div style="color:#98a0b3;font-size:0.85rem;">Currently Scheduled:</div>
+      <div style="font-weight:700;color:#fff;font-size:1.1rem;margin-top:2px;">
+        {{ booking.time_slot.drop_zone.name }}
+      </div>
+      <div style="color:#ff8a3d;font-size:0.95rem;font-weight:600;">
+        {{ booking.time_slot.date|date:"l, F j, Y" }} at {{ booking.time_slot.start_time|time:"h:i A" }}
+      </div>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+
+      <div class="mb-4">
+        <label class="form-label" for="{{ form.new_time_slot.id_for_label }}" style="font-weight:700;color:#fff;margin-bottom:0.5rem;display:block;">
+          <i class="bi bi-calendar-check text-orange"></i> Choose New Flight Date &amp; Time:
+        </label>
+        {{ form.new_time_slot }}
+        {% if form.new_time_slot.errors %}
+          <div class="text-danger small mt-1">{{ form.new_time_slot.errors|join:", " }}</div>
+        {% endif %}
+      </div>
+
+      <div class="alert alert-info py-2 px-3 mb-4" style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:10px;font-size:0.85rem;color:#93c5fd;">
+        <i class="bi bi-shield-check"></i> Free rescheduling policy applies. Your package and payment are preserved.
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <a href="{% url 'bookings:detail' booking.pk %}" class="btn btn-ghost" style="border:1px solid #2a3448;color:#c8cee0;padding:10px 18px;border-radius:30px;">
+          &larr; Never Mind
+        </a>
+        <button type="submit" class="btn btn-orange" style="background:#ff6a1a;color:#fff;font-weight:700;padding:10px 24px;border-radius:30px;border:none;">
+          <i class="bi bi-check-lg"></i> Confirm New Flight Slot
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

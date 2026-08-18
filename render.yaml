@@ -1,0 +1,30 @@
+# Render Blueprint — deploy this repo as a Django web service + Postgres DB.
+# Usage: dashboard.render.com → New + → Blueprint → pick this repo.
+
+services:
+  - type: web
+    name: skyeman
+    runtime: python
+    plan: free
+    buildCommand: ./build.sh
+    startCommand: gunicorn skyeman_project.wsgi:application
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: skyeman-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: "skyeman.onrender.com,localhost,127.0.0.1"
+      - key: PYTHON_VERSION
+        value: 3.13.5
+    healthCheckPath: /healthz/
+
+databases:
+  - name: skyeman-db
+    plan: free
+    databaseName: skyeman
+    user: skyeman

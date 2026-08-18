@@ -1,0 +1,32 @@
+{% extends "skyeman_project/base.html" %}
+{% block title %}Drop Zones — Skyeman{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div class="eyebrow">Locations</div>
+  <h1>Drop zones</h1>
+  <p>Three skydiving locations across Lagos, picked for scenery and easy access.</p>
+</div>
+
+<div class="grid grid-3">
+  {% for dz in drop_zones %}
+    <a class="card-link scroll-animate scroll-animate-delay-{{ forloop.counter|add:1 }}" href="{% url 'dropzones:dropzone_detail' dz.pk %}">
+      <div class="card">
+        {% if dz.image_url %}
+          <img class="card-img" src="{{ dz.image_url }}" alt="{{ dz.name }}" loading="lazy" onerror="this.onerror=null;this.src='https://i.pinimg.com/1200x/f3/40/4e/f3404e93fd13c3b360c59871b5a22603.jpg'">
+        {% else %}
+          <img class="card-img" src="https://i.pinimg.com/736x/ab/ef/40/abef4083daaaa8427d0244bccbe692b0.jpg" alt="{{ dz.name }}" loading="lazy" onerror="this.onerror=null;this.src='https://i.pinimg.com/1200x/f3/40/4e/f3404e93fd13c3b360c59871b5a22603.jpg'">
+        {% endif %}
+        <div class="card-body">
+          <span class="pill"><i class="bi bi-geo-alt"></i> {{ dz.city }}</span>
+          <h3 class="mt-2">{{ dz.name }}</h3>
+          <p class="dim mb-1"><i class="bi bi-pin-map"></i> {{ dz.address }}</p>
+          <p>{{ dz.description|truncatewords:20 }}</p>
+        </div>
+      </div>
+    </a>
+  {% empty %}
+    <div class="empty">No drop zones yet.</div>
+  {% endfor %}
+</div>
+{% endblock %}

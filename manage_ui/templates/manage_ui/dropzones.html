@@ -1,0 +1,35 @@
+{% extends "manage_ui/_base.html" %}
+{% block ops_content %}
+
+<div class="ops-header">
+  <div>
+    <div class="crumbs"><a href="{% url 'manage_ui:dashboard' %}">Console</a> / Drop Zones</div>
+    <h1><i class="bi bi-geo-alt text-orange"></i> Drop Zones</h1>
+  </div>
+</div>
+
+<div class="ops-panel" style="padding:0;">
+  {% if drop_zones %}
+    <table class="ops-table">
+      <thead><tr><th>Name</th><th>City</th><th>Address</th><th>Instructors</th><th>Slots</th><th></th></tr></thead>
+      <tbody>
+        {% for dz in drop_zones %}
+          <tr>
+            <td><strong>{{ dz.name }}</strong></td>
+            <td>{{ dz.city }}</td>
+            <td><small style="color:var(--muted);">{{ dz.address }}</small></td>
+            <td>{{ dz.instructors_total }}</td>
+            <td>{{ dz.slots_total }}</td>
+            <td><a class="btn btn-ghost btn-sm" href="/admin/dropzones/dropzone/{{ dz.pk }}/change/" style="font-size:0.72rem;padding:3px 10px;">Edit</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="ops-empty">No drop zones yet.</div>
+  {% endif %}
+</div>
+<p style="color:var(--muted);font-size:0.82rem;margin-top:1rem;">
+  <i class="bi bi-info-circle"></i> To add or edit drop zones, instructors, slots, and packages, use the <a href="/admin/dropzones/" style="color:var(--orange);">Django Admin</a>. (Operations console keeps editing simple by design.)
+</p>
+{% endblock %}

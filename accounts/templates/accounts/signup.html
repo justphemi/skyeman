@@ -1,0 +1,944 @@
+{% extends "skyeman_project/base.html" %}
+{% load static %}
+{% block title %}Sign up — Skyeman{% endblock %}
+
+{% block extra_head %}
+<style>
+  /* ===== FULL SCREEN BACKGROUND CAROUSEL ===== */
+  .auth-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    overflow: hidden;
+    padding: 1rem;
+  }
+  
+  .auth-bg-carousel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    overflow: hidden;
+  }
+  
+  .auth-bg-carousel .slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: scale(1);
+  }
+  
+  .auth-bg-carousel .slide.active {
+    opacity: 1;
+  }
+  
+  .auth-bg-carousel .slide.zooming {
+    animation: slowZoom 25s ease-in-out infinite alternate;
+  }
+  
+  @keyframes slowZoom {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.12); }
+  }
+  
+  .auth-bg-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(11, 15, 23, 0.65);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1;
+  }
+  
+  .auth-bg-overlay::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(ellipse at center, transparent 30%, rgba(11, 15, 23, 0.4) 100%);
+  }
+  
+  .wizard-container {
+    position: relative;
+    z-index: 20;
+    max-width: 460px;
+    width: 100%;
+    margin: 0 auto;
+    animation: fadeUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  
+  .wizard-card {
+    background: rgba(20, 26, 38, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(42, 52, 72, 0.6);
+    border-radius: var(--r-lg);
+    padding: clamp(1.5rem, 3vw, 2.5rem);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 25px 80px rgba(0,0,0,0.6);
+  }
+  
+  .wizard-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 80%;
+    height: 80%;
+    background: radial-gradient(circle, var(--orange-dim) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0.2;
+  }
+  
+  .wizard-graphic {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+  .wizard-graphic .emoji-big {
+    font-size: clamp(3.5rem, 8vw, 5rem);
+    display: block;
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-12px); }
+  }
+  .wizard-graphic h2 {
+    margin-top: 0.5rem;
+    font-size: clamp(1.3rem, 2.5vw, 1.8rem);
+    color: #fff;
+  }
+  .wizard-graphic p {
+    color: var(--muted);
+    font-size: clamp(0.85rem, 1vw, 0.95rem);
+    margin-bottom: 0;
+  }
+  
+  .wizard-progress {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+  .wizard-progress .dot {
+    width: clamp(10px, 1.2vw, 14px);
+    height: clamp(10px, 1.2vw, 14px);
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    transition: var(--transition);
+    cursor: pointer;
+    border: 2px solid transparent;
+    flex-shrink: 0;
+  }
+  .wizard-progress .dot.active {
+    background: var(--orange);
+    border-color: var(--orange-2);
+    box-shadow: 0 0 20px var(--orange-glow);
+  }
+  .wizard-progress .dot.done {
+    background: var(--green);
+    border-color: var(--green);
+  }
+  .wizard-progress .dot-line {
+    flex: 0 0 30px;
+    height: 2px;
+    background: rgba(255,255,255,0.1);
+    align-self: center;
+    transition: var(--transition);
+  }
+  .wizard-progress .dot-line.done {
+    background: var(--green);
+  }
+  
+  .wizard-step {
+    display: none;
+    animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    position: relative;
+    z-index: 1;
+  }
+  .wizard-step.active {
+    display: block;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(30px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes slideOut {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(-30px); }
+  }
+  .wizard-step.exit {
+    animation: slideOut 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  }
+  
+  .form-group-wizard {
+    margin-bottom: 1.25rem;
+    position: relative;
+  }
+  .form-group-wizard .form-label {
+    display: block;
+    font-weight: 600;
+    font-size: clamp(0.8rem, 0.9vw, 0.85rem);
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+  .form-group-wizard input {
+    width: 100%;
+    padding: clamp(10px, 1.2vw, 14px) clamp(12px, 1.5vw, 18px);
+    background: rgba(11, 15, 23, 0.6);
+    border: 2px solid rgba(255,255,255,0.1);
+    border-radius: var(--r-md);
+    color: #fff !important;
+    font-size: clamp(0.9rem, 1vw, 1rem);
+    transition: var(--transition);
+  }
+  .form-group-wizard input::placeholder {
+    color: rgba(255,255,255,0.3);
+  }
+  .form-group-wizard input:focus {
+    border-color: var(--orange);
+    box-shadow: 0 0 0 4px var(--orange-dim);
+    outline: none;
+    background: rgba(11, 15, 23, 0.8);
+  }
+  .form-group-wizard input.error {
+    border-color: var(--red);
+    box-shadow: 0 0 0 4px rgba(239,68,68,0.15);
+  }
+  .form-group-wizard input.success {
+    border-color: var(--green);
+    box-shadow: 0 0 0 4px rgba(34,197,94,0.15);
+  }
+  .form-group-wizard .input-icon {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255,255,255,0.3);
+    font-size: 1.2rem;
+    pointer-events: none;
+    transition: var(--transition);
+  }
+  .form-group-wizard .input-icon.success { color: var(--green); }
+  .form-group-wizard .input-icon.error { color: var(--red); }
+  .form-group-wizard .validation-feedback {
+    font-size: clamp(0.75rem, 0.8vw, 0.82rem);
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 24px;
+    transition: var(--transition);
+    color: rgba(255,255,255,0.6);
+  }
+  .validation-feedback.success { color: var(--green); }
+  .validation-feedback.error { color: var(--red); }
+  .validation-feedback .bi { font-size: 0.9rem; }
+  
+  .input-wrap {
+    position: relative;
+  }
+  .input-wrap input { padding-right: 44px; }
+  
+  .password-toggle {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: 0;
+    color: rgba(255,255,255,0.3);
+    cursor: pointer;
+    font-size: 1.1rem;
+    padding: 4px;
+    transition: var(--transition);
+    z-index: 2;
+  }
+  .password-toggle:hover { color: #fff; }
+  
+  .password-strength {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+  }
+  .password-strength .bar {
+    flex: 1;
+    height: 3px;
+    border-radius: var(--r-pill);
+    background: rgba(255,255,255,0.1);
+    transition: var(--transition);
+  }
+  .password-strength .bar.weak { background: var(--red); }
+  .password-strength .bar.medium { background: var(--amber); }
+  .password-strength .bar.strong { background: var(--green); }
+  
+  .password-hints {
+    font-size: clamp(0.7rem, 0.8vw, 0.78rem);
+    color: rgba(255,255,255,0.4);
+    margin-top: 4px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+  }
+  .password-hints .hint { display: flex; align-items: center; gap: 4px; }
+  .password-hints .hint .bi { font-size: 0.7rem; }
+  .password-hints .hint.valid { color: var(--green); }
+  .password-hints .hint.invalid { color: rgba(255,255,255,0.3); }
+  
+  .wizard-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+  .wizard-actions .btn {
+    flex: 1;
+    min-width: 80px;
+  }
+  .wizard-actions .btn-back {
+    flex: 0.5;
+  }
+  
+  .btn-loading {
+    position: relative;
+    pointer-events: none;
+  }
+  .btn-loading .spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+    margin-right: 8px;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  
+  .wizard-footer {
+    text-align: center;
+    margin-top: 1.25rem;
+    color: rgba(255,255,255,0.5);
+    font-size: clamp(0.8rem, 0.9vw, 0.9rem);
+    position: relative;
+    z-index: 1;
+  }
+  .wizard-footer a { 
+    color: var(--orange-2);
+    font-weight: 600;
+  }
+  .wizard-footer a:hover { color: var(--orange); }
+  
+  .auth-brand {
+    position: fixed;
+    top: 2rem;
+    left: 2rem;
+    z-index: 3;
+    color: #fff;
+    font-weight: 800;
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+    opacity: 0.8;
+    transition: var(--transition);
+  }
+  .auth-brand:hover {
+    opacity: 1;
+    color: #fff;
+  }
+  .auth-brand .dot {
+    color: var(--orange);
+    font-size: 1.8rem;
+    line-height: 1;
+  }
+  
+  .auth-slide-indicators {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    display: flex;
+    gap: 0.5rem;
+  }
+  .auth-slide-indicators .indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    transition: var(--transition);
+    cursor: pointer;
+  }
+  .auth-slide-indicators .indicator.active {
+    background: var(--orange);
+    width: 24px;
+    border-radius: 4px;
+  }
+  
+  .terms-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0.5rem 0 1rem;
+    font-size: clamp(0.8rem, 0.85vw, 0.85rem);
+    color: rgba(255,255,255,0.5);
+  }
+  .terms-check input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    flex-shrink: 0;
+    accent-color: var(--orange);
+    cursor: pointer;
+  }
+  .terms-check a { color: var(--orange-2); }
+  .terms-check a:hover { color: var(--orange); }
+  
+  @media (max-width: 560px) {
+    .auth-brand {
+      top: 1rem;
+      left: 1rem;
+      font-size: 1.1rem;
+    }
+    .auth-brand .dot { font-size: 1.4rem; }
+    .auth-slide-indicators { bottom: 1rem; }
+    .auth-page { padding: 0.5rem; }
+    .wizard-card { padding: 1.25rem; }
+  }
+  
+  @media (max-width: 400px) {
+    .wizard-actions {
+      flex-direction: column;
+    }
+    .wizard-actions .btn-back {
+      flex: 1;
+      order: 2;
+    }
+    .wizard-actions .btn {
+      order: 1;
+    }
+    .auth-brand { display: none; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- ===== BACKGROUND CAROUSEL ===== -->
+<div class="auth-bg-carousel" id="authCarousel">
+  <div class="slide active zooming" style="background-image: url('https://i.pinimg.com/1200x/f3/40/4e/f3404e93fd13c3b360c59871b5a22603.jpg');"></div>
+  <div class="slide" style="background-image: url('https://i.pinimg.com/736x/2b/0c/c0/2b0cc090855e93a1c86fa96df7eb84df.jpg');"></div>
+  <div class="slide" style="background-image: url('https://i.pinimg.com/736x/ab/ef/40/abef4083daaaa8427d0244bccbe692b0.jpg');"></div>
+  <div class="slide" style="background-image: url('https://i.pinimg.com/736x/4e/aa/f5/4eaaf59d2dbeb533133004bbc09f8c0c.jpg');"></div>
+  <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1529928520614-7c76e2d99740?w=1200&q=80');"></div>
+</div>
+
+<!-- ===== OVERLAY ===== -->
+<div class="auth-bg-overlay"></div>
+
+<!-- ===== BRAND ===== -->
+<a class="auth-brand" href="{% url 'dropzones:home' %}">
+  skyeman<span class="dot">.</span>
+</a>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div class="auth-page">
+  <div class="wizard-container">
+    <div class="wizard-card">
+      <div class="wizard-graphic">
+        <div class="wizard-icon" style="font-size:3rem;color:var(--orange);margin-bottom:0.5rem;"><i class="bi bi-person-plus-fill"></i></div>
+        <h2>Start your adventure</h2>
+        <p>Create your account and take the leap</p>
+      </div>
+
+      <!-- ===== PROGRESS DOTS (2 steps only) ===== -->
+      <div class="wizard-progress">
+        <span class="dot active" data-step="1"></span>
+        <span class="dot-line" data-step="1"></span>
+        <span class="dot" data-step="2"></span>
+      </div>
+
+      <form method="post" id="signupForm" novalidate>
+        {% csrf_token %}
+
+        <!-- ===== STEP 1: EMAIL (now the first and active step) ===== -->
+        <div class="wizard-step active" data-step="1">
+          <div class="form-group-wizard">
+            <label class="form-label" for="id_email">Email address</label>
+            <div class="input-wrap">
+              <input type="email" id="id_email" name="email" 
+                     placeholder="you@example.com"
+                     autocomplete="email"
+                     required
+                     data-validate="email">
+              <i class="bi bi-envelope input-icon" id="emailIcon"></i>
+            </div>
+            <!-- <div class="validation-feedback" id="emailFeedback">
+              <span>We'll send your confirmation here</span>
+            </div> -->
+          </div>
+          <div class="wizard-actions">
+            <button type="button" class="btn btn-orange" onclick="nextStep(1)">Continue <i class="bi bi-arrow-right"></i></button>
+          </div>
+        </div>
+
+        <!-- ===== STEP 2: PASSWORD (now the second step) ===== -->
+        <div class="wizard-step" data-step="2">
+          <div class="form-group-wizard">
+            <label class="form-label" for="id_password1">Create a password</label>
+            <div class="input-wrap">
+              <input type="password" id="id_password1" name="password1" 
+                     placeholder="Create a strong password"
+                     autocomplete="new-password"
+                     required
+                     minlength="8"
+                     data-validate="password">
+              <button type="button" class="password-toggle" onclick="togglePassword()" tabindex="-1">
+                <i class="bi bi-eye" id="passwordIcon"></i>
+              </button>
+            </div>
+            <div class="validation-feedback" id="passwordFeedback">
+              <span>Minimum 8 characters</span>
+            </div>
+            <div class="password-strength" id="passwordStrength">
+              <span class="bar" id="strength1"></span>
+              <span class="bar" id="strength2"></span>
+              <span class="bar" id="strength3"></span>
+            </div>
+            <div class="password-hints" id="passwordHints">
+              <span class="hint" data-check="length"><i class="bi bi-circle"></i> 8+ characters</span>
+              <span class="hint" data-check="uppercase"><i class="bi bi-circle"></i> Uppercase</span>
+              <span class="hint" data-check="lowercase"><i class="bi bi-circle"></i> Lowercase</span>
+              <span class="hint" data-check="number"><i class="bi bi-circle"></i> Number</span>
+            </div>
+          </div>
+
+          <div class="form-group-wizard">
+            <label class="form-label" for="id_password2">Confirm password</label>
+            <div class="input-wrap">
+              <input type="password" id="id_password2" name="password2" 
+                     placeholder="Confirm your password"
+                     autocomplete="new-password"
+                     required
+                     data-validate="confirm">
+              <i class="bi bi-check-circle input-icon" id="confirmIcon"></i>
+            </div>
+            <div class="validation-feedback" id="confirmFeedback">
+              <span>Re-enter your password</span>
+            </div>
+          </div>
+
+          <div class="terms-check">
+            <input type="checkbox" id="id_terms" name="terms" required>
+            <label for="id_terms">I agree to the <a href="{% url 'dropzones:terms' %}" target="_blank">Terms of Service</a> and <a href="{% url 'dropzones:privacy' %}" target="_blank">Privacy Policy</a></label>
+          </div>
+
+          <div class="wizard-actions">
+            <button type="button" class="btn btn-ghost btn-back" onclick="prevStep(2)">
+              <i class="bi bi-arrow-left"></i> Back
+            </button>
+            <button type="submit" class="btn btn-orange" id="submitBtn">
+              <span id="submitText">Create account <i class="bi bi-rocket-takeoff"></i></span>
+              <span id="submitLoading" style="display:none;">
+                <span class="spinner"></span> Creating account...
+              </span>
+            </button>
+          </div>
+        </div>
+
+        {% for field in form.hidden_fields %}
+          {{ field }}
+        {% endfor %}
+
+        {% if form.non_field_errors %}
+          <div class="form-error" style="margin-top:1rem;text-align:center;padding:0.75rem;background:rgba(239,68,68,0.15);border-radius:var(--r-md);border:1px solid rgba(239,68,68,0.2);color:#f87171;">
+            {{ form.non_field_errors|join:", " }}
+          </div>
+        {% endif %}
+      </form>
+
+      <div class="wizard-footer">
+        Already have an account? <a href="{% url 'accounts:login' %}">Log in</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SLIDE INDICATORS ===== -->
+<div class="auth-slide-indicators" id="slideIndicators">
+  <span class="indicator active" data-index="0"></span>
+  <span class="indicator" data-index="1"></span>
+  <span class="indicator" data-index="2"></span>
+  <span class="indicator" data-index="3"></span>
+  <span class="indicator" data-index="4"></span>
+</div>
+
+<script>
+  // ===== BACKGROUND CAROUSEL =====
+  (function() {
+    const slides = document.querySelectorAll('.auth-bg-carousel .slide');
+    const indicators = document.querySelectorAll('.auth-slide-indicators .indicator');
+    let currentSlide = 0;
+    let interval;
+
+    function goToSlide(index) {
+      slides.forEach((slide, i) => {
+        slide.classList.remove('active', 'zooming');
+        if (i === index) {
+          slide.classList.add('active');
+          setTimeout(() => slide.classList.add('zooming'), 100);
+        }
+      });
+      indicators.forEach((ind, i) => {
+        ind.classList.toggle('active', i === index);
+      });
+      currentSlide = index;
+    }
+
+    function nextSlide() {
+      const next = (currentSlide + 1) % slides.length;
+      goToSlide(next);
+    }
+
+    function startCarousel() {
+      if (interval) clearInterval(interval);
+      interval = setInterval(nextSlide, 5000);
+    }
+
+    indicators.forEach(ind => {
+      ind.addEventListener('click', function() {
+        const index = parseInt(this.dataset.index);
+        goToSlide(index);
+        startCarousel();
+      });
+    });
+
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const container = document.querySelector('.auth-page');
+    
+    container.addEventListener('touchstart', function(e) {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+    
+    container.addEventListener('touchend', function(e) {
+      touchEndX = e.changedTouches[0].screenX;
+      const diff = touchStartX - touchEndX;
+      if (Math.abs(diff) > 50) {
+        if (diff > 0) {
+          const next = (currentSlide + 1) % slides.length;
+          goToSlide(next);
+        } else {
+          const prev = (currentSlide - 1 + slides.length) % slides.length;
+          goToSlide(prev);
+        }
+        startCarousel();
+      }
+    }, { passive: true });
+
+    startCarousel();
+
+    const bgContainer = document.querySelector('.auth-bg-carousel');
+    bgContainer.addEventListener('mouseenter', () => clearInterval(interval));
+    bgContainer.addEventListener('mouseleave', startCarousel);
+  })();
+
+  // ===== WIZARD STATE (2 steps only) =====
+  let currentStep = 1;
+  const totalSteps = 2;
+  let isSubmitting = false;
+
+  // ===== VALIDATION RULES (username removed) =====
+  const validators = {
+    email: function(value) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value)) return { valid: false, message: 'Enter a valid email address' };
+      return { valid: true, message: 'Email looks good' };
+    },
+    password: function(value) {
+      const checks = getPasswordChecks(value);
+      const allValid = Object.values(checks).every(v => v);
+      if (value.length < 8) return { valid: false, message: 'Minimum 8 characters', checks };
+      if (!allValid) return { valid: false, message: 'Check the requirements below', checks };
+      return { valid: true, message: 'Strong password!', checks };
+    },
+    confirm: function(value) {
+      const password = document.getElementById('id_password1')?.value || '';
+      if (value !== password) return { valid: false, message: 'Passwords do not match' };
+      if (value.length < 8) return { valid: false, message: 'Minimum 8 characters' };
+      return { valid: true, message: 'Passwords match' };
+    }
+  };
+
+  function getPasswordChecks(value) {
+    return {
+      length: value.length >= 8,
+      uppercase: /[A-Z]/.test(value),
+      lowercase: /[a-z]/.test(value),
+      number: /[0-9]/.test(value)
+    };
+  }
+
+  // ===== STEP MANAGEMENT =====
+  function nextStep(fromStep) {
+    const stepEl = document.querySelector(`.wizard-step[data-step="${fromStep}"]`);
+    const inputs = stepEl.querySelectorAll('input[data-validate]');
+    let allValid = true;
+
+    inputs.forEach(input => {
+      if (!validateField(input)) allValid = false;
+    });
+
+    if (!allValid) return;
+
+    const nextStepEl = document.querySelector(`.wizard-step[data-step="${fromStep + 1}"]`);
+    if (!nextStepEl) return;
+
+    stepEl.classList.add('exit');
+    setTimeout(() => {
+      stepEl.classList.remove('active', 'exit');
+      nextStepEl.classList.add('active');
+      currentStep = fromStep + 1;
+      updateProgress();
+      const firstInput = nextStepEl.querySelector('input');
+      if (firstInput) setTimeout(() => firstInput.focus(), 300);
+    }, 300);
+  }
+
+  function prevStep(fromStep) {
+    const stepEl = document.querySelector(`.wizard-step[data-step="${fromStep}"]`);
+    const prevStepEl = document.querySelector(`.wizard-step[data-step="${fromStep - 1}"]`);
+    if (!prevStepEl) return;
+
+    stepEl.classList.add('exit');
+    setTimeout(() => {
+      stepEl.classList.remove('active', 'exit');
+      prevStepEl.classList.add('active');
+      currentStep = fromStep - 1;
+      updateProgress();
+    }, 300);
+  }
+
+  function updateProgress() {
+    const dots = document.querySelectorAll('.wizard-progress .dot');
+    const lines = document.querySelectorAll('.wizard-progress .dot-line');
+    
+    dots.forEach((dot, index) => {
+      const step = index + 1;
+      dot.classList.remove('active', 'done');
+      if (step === currentStep) dot.classList.add('active');
+      else if (step < currentStep) dot.classList.add('done');
+    });
+    
+    lines.forEach((line, index) => {
+      const step = index + 1;
+      line.classList.toggle('done', step < currentStep);
+    });
+  }
+
+  // ===== FIELD VALIDATION =====
+  function validateField(input) {
+    const validator = validators[input.dataset.validate];
+    if (!validator) return true;
+
+    const value = input.value.trim();
+    const result = validator(value);
+    const feedback = document.getElementById(input.id + 'Feedback');
+    const icon = document.getElementById(input.id + 'Icon') || 
+                 input.closest('.input-wrap')?.querySelector('.input-icon');
+
+    input.classList.remove('error', 'success');
+    if (icon) icon.className = 'bi input-icon';
+
+    if (value === '') {
+      if (feedback) feedback.innerHTML = `<span>This field is required</span>`;
+      feedback?.classList.remove('success', 'error');
+      return false;
+    }
+
+    if (result.valid) {
+      input.classList.add('success');
+      if (icon) icon.className = 'bi bi-check-circle input-icon success';
+      if (feedback) {
+        feedback.innerHTML = `<i class="bi bi-check-circle"></i> ${result.message}`;
+        feedback.classList.add('success');
+        feedback.classList.remove('error');
+      }
+      if (input.id === 'id_password1' && result.checks) {
+        updatePasswordHints(result.checks);
+        updatePasswordStrength(result.checks);
+      }
+      return true;
+    } else {
+      input.classList.add('error');
+      if (icon) icon.className = 'bi bi-x-circle input-icon error';
+      if (feedback) {
+        feedback.innerHTML = `<i class="bi bi-x-circle"></i> ${result.message}`;
+        feedback.classList.add('error');
+        feedback.classList.remove('success');
+      }
+      if (input.id === 'id_password1' && result.checks) {
+        updatePasswordHints(result.checks);
+        updatePasswordStrength(result.checks);
+      }
+      return false;
+    }
+  }
+
+  function updatePasswordHints(checks) {
+    const hints = document.querySelectorAll('.password-hints .hint');
+    hints.forEach(hint => {
+      const check = hint.dataset.check;
+      const isValid = checks[check];
+      hint.classList.remove('valid', 'invalid');
+      const icon = hint.querySelector('.bi');
+      if (isValid) {
+        hint.classList.add('valid');
+        icon.className = 'bi bi-check-circle-fill';
+      } else {
+        hint.classList.add('invalid');
+        icon.className = 'bi bi-circle';
+      }
+    });
+  }
+
+  function updatePasswordStrength(checks) {
+    const validCount = Object.values(checks).filter(v => v).length;
+    const bars = [
+      document.getElementById('strength1'),
+      document.getElementById('strength2'),
+      document.getElementById('strength3')
+    ];
+    
+    bars.forEach((bar, index) => {
+      bar.className = 'bar';
+      if (index < Math.min(validCount, 3)) {
+        if (validCount <= 2) bar.classList.add('weak');
+        else if (validCount === 3) bar.classList.add('medium');
+        else if (validCount === 4) bar.classList.add('strong');
+      }
+    });
+  }
+
+  // ===== EVENT LISTENERS =====
+  document.querySelectorAll('input[data-validate]').forEach(input => {
+    input.addEventListener('input', function() {
+      validateField(this);
+    });
+    
+    input.addEventListener('blur', function() {
+      if (this.value.trim()) validateField(this);
+    });
+
+    const step = input.closest('.wizard-step');
+    if (step) {
+      const stepNum = parseInt(step.dataset.step);
+      input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          if (stepNum < totalSteps) {
+            nextStep(stepNum);
+          }
+        }
+      });
+    }
+  });
+
+  function togglePassword() {
+    const input = document.getElementById('id_password1');
+    const icon = document.getElementById('passwordIcon');
+    if (input.type === 'password') {
+      input.type = 'text';
+      icon.className = 'bi bi-eye-slash';
+    } else {
+      input.type = 'password';
+      icon.className = 'bi bi-eye';
+    }
+  }
+
+  // ===== FORM SUBMISSION =====
+  document.getElementById('signupForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (isSubmitting) return;
+
+    const stepEl = document.querySelector(`.wizard-step[data-step="${currentStep}"]`);
+    const inputs = stepEl.querySelectorAll('input[data-validate]');
+    let allValid = true;
+    inputs.forEach(input => {
+      if (!validateField(input)) allValid = false;
+    });
+    
+    const terms = document.getElementById('id_terms');
+    if (terms && !terms.checked) {
+      allValid = false;
+      terms.style.border = '2px solid var(--red)';
+      setTimeout(() => terms.style.border = '', 2000);
+    }
+
+    if (!allValid) return;
+
+    isSubmitting = true;
+    const submitBtn = document.getElementById('submitBtn');
+    const submitText = document.getElementById('submitText');
+    const submitLoading = document.getElementById('submitLoading');
+    
+    submitBtn.classList.add('btn-loading');
+    submitText.style.display = 'none';
+    submitLoading.style.display = 'inline-flex';
+    submitBtn.disabled = true;
+
+    this.submit();
+  });
+
+  // ===== INIT =====
+  setTimeout(() => {
+    const firstInput = document.querySelector('.wizard-step.active input');
+    if (firstInput) firstInput.focus();
+  }, 400);
+</script>
+{% endblock %}
+
+{% block marketing_footer %}{% endblock %}

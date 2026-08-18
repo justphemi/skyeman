@@ -1,0 +1,11 @@
+{
+  "name": "skyeman-django",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Skyeman Skydiving Lagos - Django booking and operations management system",
+  "scripts": {
+    "dev": "python3 manage.py runserver 0.0.0.0:3000",
+    "start": "python3 manage.py runserver 0.0.0.0:3000",
+    "build": "python3 manage.py collectstatic --noinput"
+  }
+}

@@ -1,0 +1,368 @@
+{% extends "skyeman_project/base.html" %}
+{% load static %}
+{% block title %}Logged out — Skyeman{% endblock %}
+
+{% block extra_head %}
+<style>
+  .auth-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    padding: 1rem;
+  }
+  
+  .auth-bg-carousel {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 0;
+    overflow: hidden;
+  }
+  
+  .auth-bg-carousel .slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: scale(1);
+  }
+  
+  .auth-bg-carousel .slide.active {
+    opacity: 1;
+  }
+  
+  .auth-bg-carousel .slide.zooming {
+    animation: slowZoom 25s ease-in-out infinite alternate;
+  }
+  
+  @keyframes slowZoom {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.12); }
+  }
+  
+  .auth-bg-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(11, 15, 23, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1;
+  }
+  
+  .auth-brand {
+    position: fixed;
+    top: 2rem;
+    left: 2rem;
+    z-index: 3;
+    color: #fff;
+    font-weight: 800;
+    font-size: 1.4rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    text-decoration: none;
+    opacity: 0.8;
+    transition: var(--transition);
+  }
+  .auth-brand:hover {
+    opacity: 1;
+    color: #fff;
+  }
+  .auth-brand .dot {
+    color: var(--orange);
+    font-size: 1.8rem;
+    line-height: 1;
+  }
+  
+  .wizard-container {
+    position: relative;
+    z-index: 2;
+    max-width: 440px;
+    width: 100%;
+    margin: 0 auto;
+    animation: fadeUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  
+  .wizard-card {
+    background: rgba(20, 26, 38, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(42, 52, 72, 0.6);
+    border-radius: var(--r-lg);
+    padding: clamp(1.5rem, 3vw, 2.5rem);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 25px 80px rgba(0,0,0,0.6);
+  }
+  
+  .wizard-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 80%;
+    height: 80%;
+    background: radial-gradient(circle, var(--orange-dim) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0.3;
+  }
+  
+  .wizard-card .emoji-big {
+    font-size: clamp(4rem, 8vw, 5rem);
+    display: block;
+    animation: float 3s ease-in-out infinite;
+    position: relative;
+    z-index: 1;
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0px) scale(1); }
+    50% { transform: translateY(-12px) scale(1.05); }
+  }
+  
+  .wizard-card h1 {
+    margin-top: 0.5rem;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    color: #fff;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .wizard-card p {
+    color: rgba(255,255,255,0.6);
+    font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .wizard-card .actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .wizard-card .countdown {
+    margin-top: 1rem;
+    color: rgba(255,255,255,0.3);
+    font-size: 0.85rem;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .wizard-card .countdown span {
+    color: var(--orange);
+    font-weight: 700;
+  }
+  
+  .auth-slide-indicators {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    display: flex;
+    gap: 0.5rem;
+  }
+  .auth-slide-indicators .indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    transition: var(--transition);
+    cursor: pointer;
+  }
+  .auth-slide-indicators .indicator.active {
+    background: var(--orange);
+    width: 24px;
+    border-radius: 4px;
+  }
+  
+  @media (max-width: 560px) {
+    .auth-brand {
+      top: 1rem;
+      left: 1rem;
+      font-size: 1.1rem;
+    }
+    .auth-brand .dot { font-size: 1.4rem; }
+    .auth-slide-indicators { bottom: 1rem; }
+    .auth-page { padding: 0.5rem; }
+    .wizard-card { padding: 1.25rem; }
+  }
+  
+  @media (max-width: 400px) {
+    .wizard-card .actions {
+      flex-direction: column;
+    }
+    .wizard-card .actions .btn {
+      width: 100%;
+      justify-content: center;
+    }
+    .auth-brand { display: none; }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- ===== BACKGROUND CAROUSEL ===== -->
+<div class="auth-bg-carousel" id="authCarousel">
+  <div class="slide active zooming" style="background-image: url('https://i.pinimg.com/1200x/f3/40/4e/f3404e93fd13c3b360c59871b5a22603.jpg');"></div>
+  <div class="slide" style="background-image: url('https://i.pinimg.com/736x/2b/0c/c0/2b0cc090855e93a1c86fa96df7eb84df.jpg');"></div>
+  <div class="slide" style="background-image: url('https://i.pinimg.com/736x/ab/ef/40/abef4083daaaa8427d0244bccbe692b0.jpg');"></div>
+  <div class="slide" style="background-image: url('https://i.pinimg.com/736x/4e/aa/f5/4eaaf59d2dbeb533133004bbc09f8c0c.jpg');"></div>
+</div>
+
+<!-- ===== OVERLAY ===== -->
+<div class="auth-bg-overlay"></div>
+
+<!-- ===== BRAND ===== -->
+<a class="auth-brand" href="{% url 'dropzones:home' %}">
+  skyeman<span class="dot">.</span>
+</a>
+
+<!-- ===== MAIN CONTENT ===== -->
+<div class="auth-page">
+  <div class="wizard-container">
+    <div class="wizard-card">
+      <div class="wizard-icon" style="font-size:3rem;color:var(--orange);margin-bottom:0.5rem;"><i class="bi bi-box-arrow-right"></i></div>
+      <h1>See you soon!</h1>
+      <p>You've been logged out. Come back when you're ready for the next jump.</p>
+      <div class="actions">
+        <a class="btn btn-orange" href="{% url 'accounts:login' %}">Log back in</a>
+        <a class="btn btn-ghost" href="{% url 'dropzones:home' %}">Go to Home</a>
+      </div>
+      <div class="countdown">
+        <i class="bi bi-clock"></i> Redirecting to home in <span id="countdown">5</span>s
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SLIDE INDICATORS ===== -->
+<div class="auth-slide-indicators" id="slideIndicators">
+  <span class="indicator active" data-index="0"></span>
+  <span class="indicator" data-index="1"></span>
+  <span class="indicator" data-index="2"></span>
+  <span class="indicator" data-index="3"></span>
+</div>
+
+<script>
+  // ===== BACKGROUND CAROUSEL =====
+  (function() {
+    const slides = document.querySelectorAll('.auth-bg-carousel .slide');
+    const indicators = document.querySelectorAll('.auth-slide-indicators .indicator');
+    let currentSlide = 0;
+    let interval;
+
+    function goToSlide(index) {
+      slides.forEach((slide, i) => {
+        slide.classList.remove('active', 'zooming');
+        if (i === index) {
+          slide.classList.add('active');
+          setTimeout(() => slide.classList.add('zooming'), 100);
+        }
+      });
+      indicators.forEach((ind, i) => {
+        ind.classList.toggle('active', i === index);
+      });
+      currentSlide = index;
+    }
+
+    function nextSlide() {
+      const next = (currentSlide + 1) % slides.length;
+      goToSlide(next);
+    }
+
+    function startCarousel() {
+      if (interval) clearInterval(interval);
+      interval = setInterval(nextSlide, 5000);
+    }
+
+    indicators.forEach(ind => {
+      ind.addEventListener('click', function() {
+        const index = parseInt(this.dataset.index);
+        goToSlide(index);
+        startCarousel();
+      });
+    });
+
+    let touchStartX = 0;
+    let touchEndX = 0;
+    const container = document.querySelector('.auth-page');
+    
+    container.addEventListener('touchstart', function(e) {
+      touchStartX = e.changedTouches[0].screenX;
+    }, { passive: true });
+    
+    container.addEventListener('touchend', function(e) {
+      touchEndX = e.changedTouches[0].screenX;
+      const diff = touchStartX - touchEndX;
+      if (Math.abs(diff) > 50) {
+        if (diff > 0) {
+          const next = (currentSlide + 1) % slides.length;
+          goToSlide(next);
+        } else {
+          const prev = (currentSlide - 1 + slides.length) % slides.length;
+          goToSlide(prev);
+        }
+        startCarousel();
+      }
+    }, { passive: true });
+
+    startCarousel();
+
+    const bgContainer = document.querySelector('.auth-bg-carousel');
+    bgContainer.addEventListener('mouseenter', () => clearInterval(interval));
+    bgContainer.addEventListener('mouseleave', startCarousel);
+  })();
+
+  // ===== COUNTDOWN =====
+  let seconds = 5;
+  const countdownEl = document.getElementById('countdown');
+  const interval = setInterval(() => {
+    seconds--;
+    if (countdownEl) countdownEl.textContent = seconds;
+    if (seconds <= 0) {
+      clearInterval(interval);
+      window.location.href = "{% url 'dropzones:home' %}";
+    }
+  }, 1000);
+</script>
+{% endblock %}
+
+{% block marketing_footer %}{% endblock %}

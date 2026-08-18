@@ -1,0 +1,214 @@
+{% extends "skyeman_project/base.html" %}
+{% load humanize %}
+{% block title %}You're booked! — Skyeman{% endblock %}
+{% block marketing_footer %}{% endblock %}
+
+{% block extra_head %}
+<style>
+  .confirmation-container {
+    max-width: 600px;
+    margin: 0 auto;
+    width: 100%;
+  }
+  
+  .confirmation-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    padding: clamp(1.5rem, 3vw, 2.5rem);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    transition: var(--transition);
+  }
+  .confirmation-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 60%;
+    height: 60%;
+    background: radial-gradient(circle, var(--orange-dim) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0.15;
+  }
+  .confirmation-card > * {
+    position: relative;
+    z-index: 1;
+  }
+  .confirmation-card:hover {
+    border-color: var(--orange);
+  }
+  
+  .confirmation-icon {
+    font-size: clamp(4rem, 8vw, 5rem);
+    display: block;
+    animation: popIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+  @keyframes popIn {
+    0% { transform: scale(0) rotate(-20deg); opacity: 0; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+  
+  .confirmation-card h1 {
+    margin-top: 0.5rem;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+  }
+  .confirmation-card .subtitle {
+    color: var(--muted);
+    font-size: clamp(0.95rem, 1.1vw, 1.05rem);
+    margin-bottom: 1.5rem;
+  }
+  
+  .confirmation-details {
+    text-align: left;
+    background: var(--surface-2);
+    border-radius: var(--r-md);
+    padding: clamp(0.75rem, 1.5vw, 1rem);
+    margin: 1rem 0;
+  }
+  .confirmation-details .row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.4rem 0;
+    border-bottom: 1px solid var(--line);
+    font-size: clamp(0.82rem, 0.9vw, 0.9rem);
+  }
+  .confirmation-details .row:last-child {
+    border-bottom: none;
+  }
+  .confirmation-details .row .label {
+    color: var(--muted);
+  }
+  .confirmation-details .row .value {
+    font-weight: 600;
+    color: var(--text);
+    text-align: right;
+  }
+  .confirmation-details .row .value .highlight {
+    color: var(--orange);
+  }
+  
+  .confirmation-actions {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 1.25rem;
+  }
+  .confirmation-actions .btn {
+    min-width: 140px;
+    justify-content: center;
+  }
+  
+  .share-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+  }
+  .share-section p {
+    color: var(--muted);
+    font-size: clamp(0.8rem, 0.9vw, 0.9rem);
+    margin-bottom: 0.5rem;
+  }
+  .share-section .share-buttons {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+  }
+  .share-section .share-buttons a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(36px, 4vw, 44px);
+    height: clamp(36px, 4vw, 44px);
+    border-radius: var(--r-pill);
+    background: var(--surface);
+    color: var(--muted);
+    border: 1px solid var(--line);
+    transition: var(--transition);
+    font-size: clamp(0.9rem, 1.1vw, 1.1rem);
+  }
+  .share-section .share-buttons a:hover {
+    background: var(--orange);
+    color: #fff;
+    border-color: var(--orange);
+    transform: translateY(-2px);
+  }
+  
+  @media (max-width: 480px) {
+    .confirmation-container { padding: 0 0.5rem; }
+    .confirmation-actions .btn {
+      flex: 1 1 100%;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="confirmation-container">
+  <div class="confirmation-card scroll-animate">
+    <div class="confirmation-icon text-orange"><i class="bi bi-check-circle-fill"></i></div>
+    <h1>You're booked!</h1>
+    <p class="subtitle">Confirmation logged in your dashboard. See you in the sky.</p>
+
+    <div class="confirmation-details">
+      <div class="row">
+        <span class="label">Reference</span>
+        <span class="value">#{{ booking.id }}</span>
+      </div>
+      <div class="row">
+        <span class="label">Status</span>
+        <span class="value"><span class="status-pill confirmed">Confirmed</span></span>
+      </div>
+      <div class="row">
+        <span class="label">Drop zone</span>
+        <span class="value">{{ booking.time_slot.drop_zone.name }}</span>
+      </div>
+      <div class="row">
+        <span class="label">Address</span>
+        <span class="value" style="text-align:right;max-width:200px;">{{ booking.time_slot.drop_zone.address }}</span>
+      </div>
+      <div class="row">
+        <span class="label">Date &amp; time</span>
+        <span class="value">{{ booking.time_slot.date|date:"l, F j Y" }} at {{ booking.time_slot.start_time|time:"H:i" }}</span>
+      </div>
+      <div class="row">
+        <span class="label">Instructor</span>
+        <span class="value">{{ booking.time_slot.instructor|default:"To be assigned" }}</span>
+      </div>
+      <div class="row">
+        <span class="label">Package</span>
+        <span class="value">{{ booking.package.get_name_display }}</span>
+      </div>
+      <div class="row" style="border-bottom:none;padding-top:0.75rem;border-top:2px solid var(--line);margin-top:0.25rem;">
+        <span class="label" style="font-weight:700;">Total paid</span>
+        <span class="value highlight" style="font-weight:800;font-size:clamp(1rem,1.2vw,1.15rem);">
+          ₦{{ booking.payment.amount|floatformat:0|intcomma }}
+          <span style="font-weight:400;font-size:0.7rem;color:var(--muted);display:block;">(simulated)</span>
+        </span>
+      </div>
+    </div>
+
+    <div class="confirmation-actions">
+      <a class="btn btn-orange" href="{% url 'bookings:detail' booking.pk %}">
+        <i class="bi bi-eye"></i> View booking
+      </a>
+      <a class="btn btn-ghost" href="{% url 'accounts:dashboard' %}">
+        <i class="bi bi-speedometer2"></i> Dashboard
+      </a>
+    </div>
+
+    <div class="share-section">
+      <p><i class="bi bi-share"></i> Share your excitement</p>
+      <div class="share-buttons">
+        <a href="#" aria-label="Share on Twitter"><i class="bi bi-twitter-x"></i></a>
+        <a href="#" aria-label="Share on Instagram"><i class="bi bi-instagram"></i></a>
+        <a href="#" aria-label="Share on Facebook"><i class="bi bi-facebook"></i></a>
+        <a href="#" aria-label="Copy link"><i class="bi bi-link-45deg"></i></a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

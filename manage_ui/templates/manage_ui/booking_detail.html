@@ -1,0 +1,87 @@
+{% extends "manage_ui/_base.html" %}
+{% load humanize %}
+{% block ops_content %}
+
+<div class="ops-header">
+  <div>
+    <div class="crumbs"><a href="{% url 'manage_ui:dashboard' %}">Console</a> / <a href="{% url 'manage_ui:bookings' %}">Bookings</a> / #{{ booking.pk }}</div>
+    <h1>Booking #{{ booking.pk }}</h1>
+  </div>
+  <div><span class="status-pill {{ booking.status }}" style="font-size:0.85rem;padding:6px 14px;">{{ booking.get_status_display }}</span></div>
+</div>
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:1.25rem;">
+  <div>
+    <div class="ops-panel">
+      <h2>Jumpers ({{ participants.count }})</h2>
+      <table class="ops-table">
+        <thead><tr><th>Role</th><th>Name</th><th>Age</th><th>Weight</th></tr></thead>
+        <tbody>
+          {% for p in participants %}
+            <tr>
+              <td>{% if p.is_lead %}<span class="status-pill confirmed" style="font-size:0.65rem;">Lead</span>{% else %}<small style="color:var(--muted);">Companion</small>{% endif %}</td>
+              <td>{{ p.full_name }}</td>
+              <td>{{ p.age }}</td>
+              <td>{% if p.weight_kg %}{{ p.weight_kg }} kg{% else %}<small style="color:var(--muted);">—</small>{% endif %}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="ops-panel">
+      <h2>Flight</h2>
+      <table class="ops-table">
+        <tbody>
+          <tr><td style="color:var(--muted);">Drop Zone</td><td>{{ booking.time_slot.drop_zone.name }}</td></tr>
+          <tr><td style="color:var(--muted);">Address</td><td>{{ booking.time_slot.drop_zone.address }}</td></tr>
+          <tr><td style="color:var(--muted);">Date</td><td>{{ booking.time_slot.date|date:"l, F j, Y" }}</td></tr>
+          <tr><td style="color:var(--muted);">Time</td><td>{{ booking.time_slot.start_time|time:"H:i" }}</td></tr>
+          <tr><td style="color:var(--muted);">Instructor</td><td>{{ booking.time_slot.instructor|default:"—" }}</td></tr>
+          <tr><td style="color:var(--muted);">Package</td><td>{{ booking.package.name }} — {{ booking.package.description|truncatewords:12 }}</td></tr>
+          <tr><td style="color:var(--muted);">Notes</td><td>{{ booking.notes|default:"—" }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div>
+    <div class="ops-panel">
+      <h2>Customer</h2>
+      <table class="ops-table">
+        <tbody>
+          <tr><td style="color:var(--muted);">Username</td><td>{{ booking.user.username }}</td></tr>
+          <tr><td style="color:var(--muted);">Email</td><td>{{ booking.user.email }}</td></tr>
+          <tr><td style="color:var(--muted);">Joined</td><td>{{ booking.user.date_joined|date:"M j, Y" }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="ops-panel">
+      <h2>Payment</h2>
+      {% if booking.payment %}
+        <table class="ops-table">
+          <tbody>
+            <tr><td style="color:var(--muted);">Amount</td><td><strong style="color:var(--orange);">₦{{ booking.payment.amount|floatformat:0|intcomma }}</strong></td></tr>
+            <tr><td style="color:var(--muted);">Method</td><td>{{ booking.payment.get_method_display }}</td></tr>
+            <tr><td style="color:var(--muted);">Status</td><td><span class="status-pill {{ booking.payment.status }}">{{ booking.payment.get_status_display }}</span></td></tr>
+            <tr><td style="color:var(--muted);">Paid at</td><td>{{ booking.payment.paid_at|date:"M j, Y H:i"|default:"—" }}</td></tr>
+          </tbody>
+        </table>
+      {% else %}
+        <div class="ops-empty">No payment yet.</div>
+      {% endif %}
+    </div>
+
+    <div class="ops-panel">
+      <h2>Quick Actions</h2>
+      <form method="post" action="{% url 'manage_ui:booking_action' booking.pk %}" style="display:flex;flex-direction:column;gap:8px;">
+        {% csrf_token %}
+        <button type="submit" name="action" value="confirm" class="btn btn-orange btn-sm" style="padding:8px 12px;font-size:0.82rem;">✓ Mark Confirmed</button>
+        <button type="submit" name="action" value="complete" class="btn btn-ghost btn-sm" style="padding:8px 12px;font-size:0.82rem;">✓ Mark Completed</button>
+        <button type="submit" name="action" value="cancel" class="btn btn-ghost btn-sm" style="padding:8px 12px;font-size:0.82rem;color:#f87171;" onclick="return confirm('Cancel this booking? This will mark the payment as refunded.')">✕ Cancel Booking</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

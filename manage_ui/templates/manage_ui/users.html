@@ -1,0 +1,32 @@
+{% extends "manage_ui/_base.html" %}
+{% block ops_content %}
+
+<div class="ops-header">
+  <div>
+    <div class="crumbs"><a href="{% url 'manage_ui:dashboard' %}">Console</a> / Customers</div>
+    <h1><i class="bi bi-people text-orange"></i> Customers</h1>
+  </div>
+  <div style="font-size:0.82rem;color:var(--muted);">Most recent 200</div>
+</div>
+
+<div class="ops-panel" style="padding:0;">
+  {% if users %}
+    <table class="ops-table">
+      <thead><tr><th>Username</th><th>Email</th><th>Joined</th><th>Bookings</th><th>Staff?</th></tr></thead>
+      <tbody>
+        {% for u in users %}
+          <tr>
+            <td><strong>{{ u.username }}</strong>{% if u.first_name %} <small style="color:var(--muted);">{{ u.first_name }}</small>{% endif %}</td>
+            <td><small>{{ u.email }}</small></td>
+            <td><small>{{ u.date_joined|date:"M j, Y" }}</small></td>
+            <td>{{ u.bookings_count }}</td>
+            <td>{% if u.is_staff %}<span class="status-pill confirmed" style="font-size:0.65rem;">Staff</span>{% else %}<small style="color:var(--muted);">Customer</small>{% endif %}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <div class="ops-empty">No users yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

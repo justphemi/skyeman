@@ -1,0 +1,243 @@
+{% extends "skyeman_project/base.html" %}
+{% load static humanize %}
+{% block title %}Skyeman Operations Console{% endblock %}
+
+{% block extra_head %}
+<style>
+  .ops-shell {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 1.5rem;
+    margin: 1rem 0 3rem;
+  }
+  @media (max-width: 900px) {
+    .ops-shell { grid-template-columns: 1fr; }
+  }
+
+  .ops-sidebar {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    padding: 1rem;
+    height: fit-content;
+    position: sticky;
+    top: 1rem;
+  }
+  .ops-sidebar h3 {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin: 0 0 0.75rem;
+  }
+  .ops-sidebar a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 4px;
+    transition: var(--transition);
+    text-decoration: none;
+  }
+  .ops-sidebar a:hover { background: rgba(255,106,26,0.08); color: var(--orange-2); }
+  .ops-sidebar a.active {
+    background: rgba(255,106,26,0.12);
+    color: var(--orange);
+    border: 1px solid rgba(255,106,26,0.25);
+  }
+  .ops-sidebar a i { width: 18px; text-align: center; }
+
+  .ops-main { min-width: 0; }
+
+  .ops-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .ops-header h1 {
+    font-size: clamp(1.4rem, 3vw, 1.8rem);
+    font-weight: 800;
+    margin: 0;
+    color: var(--text);
+  }
+  .ops-header .crumbs {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .ops-header .crumbs a { color: var(--muted); text-decoration: none; }
+  .ops-header .crumbs a:hover { color: var(--orange); }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 0.85rem;
+    margin-bottom: 1.5rem;
+  }
+  .kpi-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    padding: 1rem 1.1rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-card .kpi-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    margin-bottom: 0.35rem;
+  }
+  .kpi-card .kpi-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.1;
+  }
+  .kpi-card .kpi-sub {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-top: 0.2rem;
+  }
+  .kpi-card.accent {
+    border-color: rgba(255,106,26,0.35);
+    background: linear-gradient(135deg, var(--surface), rgba(255,106,26,0.05));
+  }
+  .kpi-card.accent .kpi-value { color: var(--orange); }
+  .kpi-card .kpi-icon {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.85rem;
+    font-size: 1.4rem;
+    opacity: 0.18;
+  }
+
+  .ops-panel {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--r-lg);
+    padding: 1rem 1.1rem;
+    margin-bottom: 1.25rem;
+  }
+  .ops-panel h2 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0 0 0.85rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .ops-panel h2 a { font-size: 0.78rem; color: var(--orange); font-weight: 600; }
+
+  .ops-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  .ops-table th {
+    text-align: left;
+    padding: 0.55rem 0.6rem;
+    background: var(--surface-2);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 0.68rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .ops-table td {
+    padding: 0.65rem 0.6rem;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: var(--text);
+    vertical-align: middle;
+  }
+  .ops-table tr:last-child td { border-bottom: none; }
+  .ops-table tr:hover td { background: rgba(255,106,26,0.04); }
+
+  .status-pill {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .status-pill.pending   { background: rgba(245,158,11,0.15); color: #fbbf24; }
+  .status-pill.confirmed { background: rgba(34,197,94,0.15); color: #4ade80; }
+  .status-pill.completed { background: rgba(59,130,246,0.15); color: #60a5fa; }
+  .status-pill.cancelled { background: rgba(239,68,68,0.15); color: #f87171; }
+  .status-pill.paid      { background: rgba(34,197,94,0.15); color: #4ade80; }
+  .status-pill.refunded  { background: rgba(139,92,246,0.15); color: #c084fc; }
+  .status-pill.failed    { background: rgba(239,68,68,0.15); color: #f87171; }
+
+  .ops-filter {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+  }
+  .ops-filter .pill-tab {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    text-decoration: none;
+    transition: var(--transition);
+  }
+  .ops-filter .pill-tab:hover { color: var(--text); }
+  .ops-filter .pill-tab.active {
+    background: rgba(255,106,26,0.12);
+    border-color: rgba(255,106,26,0.35);
+    color: var(--orange);
+  }
+  .ops-filter input[type="date"],
+  .ops-filter input[type="text"] {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    color: var(--text);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 0.82rem;
+  }
+
+  .ops-empty {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.88rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="ops-shell">
+  <aside class="ops-sidebar">
+    <h3>Operations</h3>
+    <a href="{% url 'manage_ui:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+    <a href="{% url 'manage_ui:bookings' %}" class="{% if 'booking' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-ticket-perforated"></i> Bookings</a>
+    <a href="{% url 'manage_ui:payments' %}" class="{% if request.resolver_match.url_name == 'payments' %}active{% endif %}"><i class="bi bi-credit-card"></i> Payments</a>
+    <a href="{% url 'manage_ui:dropzones' %}" class="{% if request.resolver_match.url_name == 'dropzones' %}active{% endif %}"><i class="bi bi-geo-alt"></i> Drop Zones</a>
+    <a href="{% url 'manage_ui:users' %}" class="{% if request.resolver_match.url_name == 'users' %}active{% endif %}"><i class="bi bi-people"></i> Customers</a>
+    <hr style="border-color:rgba(255,255,255,0.06);margin:1rem 0;">
+    <h3>System</h3>
+    <a href="/admin/"><i class="bi bi-shield-lock"></i> Django Admin</a>
+    <a href="{% url 'dropzones:home' %}"><i class="bi bi-arrow-left"></i> Back to Site</a>
+  </aside>
+
+  <main class="ops-main">
+    {% block ops_content %}{% endblock %}
+  </main>
+</div>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "skyeman_project/base.html" %}
+{% load static %}
+{% block title %}Gallery — Skyeman{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div class="eyebrow">Moments from above</div>
+  <h1>Gallery</h1>
+  <p>Skydiving in Lagos — captured from the sky and the ground. Real jumps, real people, real adrenaline.</p>
+</div>
+
+<div class="gallery-grid">
+  <div class="gallery-item">
+    <img src="https://i.pinimg.com/736x/2b/0c/c0/2b0cc090855e93a1c86fa96df7eb84df.jpg" alt="Tandem jump over Lagos" loading="lazy">
+  </div>
+  <div class="gallery-item">
+    <img src="https://i.pinimg.com/736x/ab/ef/40/abef4083daaaa8427d0244bccbe692b0.jpg" alt="Freefall over the ocean" loading="lazy">
+  </div>
+  <div class="gallery-item">
+    <img src="https://i.pinimg.com/1200x/f3/40/4e/f3404e93fd13c3b360c59871b5a22603.jpg" alt="Drop zone in Ikoyi" loading="lazy">
+  </div>
+  <div class="gallery-item">
+    <img src="https://i.pinimg.com/736x/4e/aa/f5/4eaaf59d2dbeb533133004bbc09f8c0c.jpg" alt="Canopy flight" loading="lazy">
+  </div>
+  <div class="gallery-item">
+    <img src="https://i.pinimg.com/736x/2b/0c/c0/2b0cc090855e93a1c86fa96df7eb84df.jpg" alt="Sunset jump" loading="lazy">
+  </div>
+  <div class="gallery-item">
+    <img src="https://i.pinimg.com/736x/ab/ef/40/abef4083daaaa8427d0244bccbe692b0.jpg" alt="Group formation" loading="lazy">
+  </div>
+  <div class="gallery-item">
+    <img src="https://i.pinimg.com/1200x/f3/40/4e/f3404e93fd13c3b360c59871b5a22603.jpg" alt="Aircraft interior" loading="lazy">
+  </div>
+  <div class="gallery-item">
+    <img src="https://i.pinimg.com/736x/4e/aa/f5/4eaaf59d2dbeb533133004bbc09f8c0c.jpg" alt="Landing at Lekki" loading="lazy">
+  </div>
+</div>
+
+<div class="mt-section">
+  <div class="newsletter-section">
+    <h2>Want to be featured?</h2>
+    <p>Share your best jump photos with us using #SkyemanLagos — we might feature you here.</p>
+    <div class="newsletter-form">
+      <input type="text" class="form-control" placeholder="Your Instagram handle" aria-label="Instagram handle">
+      <button class="btn btn-orange">Share</button>
+    </div>
+  </div>
+</div>
+{% endblock %}

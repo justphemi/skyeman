@@ -1,0 +1,229 @@
+{% extends "skyeman_project/base.html" %}
+{% load humanize %}
+{% block title %}Book a Skydive — Skyeman Lagos{% endblock %}
+
+{% block extra_head %}
+<style>
+  .booking-wizard {
+    max-width: 860px;
+    margin: 0 auto;
+  }
+  .booking-card {
+    background: #141a26;
+    border: 1px solid #232d3f;
+    border-radius: 20px;
+    padding: clamp(1.2rem, 3vw, 2rem);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  }
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+  .form-label {
+    display: block;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #e8ecf5;
+    margin-bottom: 0.5rem;
+  }
+  .form-control, .form-select {
+    background: #0b0f17 !important;
+    border: 1.5px solid #2a3448 !important;
+    color: #fff !important;
+    border-radius: 10px !important;
+    padding: 12px 16px !important;
+    font-size: 0.95rem !important;
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: #ff6a1a !important;
+    box-shadow: 0 0 0 3px rgba(255,106,26,0.2) !important;
+  }
+  .pkg-preview-card {
+    background: #0b0f17;
+    border: 1px solid #232d3f;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-top: 0.5rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="booking-wizard py-4">
+  <div class="page-head mb-4 text-center">
+    <span class="eyebrow" style="background:rgba(255,106,26,0.12);color:#ff8a3d;padding:4px 14px;border-radius:20px;font-size:0.8rem;font-weight:700;text-transform:uppercase;">Step 1 of 2: Reservation</span>
+    <h1 class="mt-2" style="font-weight:800;font-size:clamp(1.8rem, 4vw, 2.5rem);">Reserve Your Flight</h1>
+    <p class="muted" style="color:#98a0b3;">Choose your flight date, time slot, jump package, and verify jumper requirements.</p>
+  </div>
+
+  <div class="booking-card">
+    <form method="post" id="bookingCreateForm">
+      {% csrf_token %}
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger mb-4" style="background:rgba(239,68,68,0.1);border:1px solid #ef4444;color:#fca5a5;border-radius:10px;">
+          {{ form.non_field_errors }}
+        </div>
+      {% endif %}
+
+      <div class="row g-3">
+        <!-- Time Slot Selection -->
+        <div class="col-md-12 form-group">
+          <label class="form-label" for="{{ form.time_slot.id_for_label }}">
+            <i class="bi bi-calendar-event text-orange"></i> {{ form.time_slot.label }}
+          </label>
+          {{ form.time_slot }}
+          {% if form.time_slot.errors %}
+            <div class="text-danger small mt-1">{{ form.time_slot.errors|join:", " }}</div>
+          {% endif %}
+          <div class="form-text small" style="color:#98a0b3;">Showing upcoming available jump sessions across Ikoyi, Lekki Beach, and Victoria Island.</div>
+        </div>
+
+        <!-- Jump Package Selection -->
+        <div class="col-md-12 form-group">
+          <label class="form-label" for="{{ form.package.id_for_label }}">
+            <i class="bi bi-parachute text-orange"></i> {{ form.package.label }}
+          </label>
+          {{ form.package }}
+          {% if form.package.errors %}
+            <div class="text-danger small mt-1">{{ form.package.errors|join:", " }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Jumper Eligibility: Age & Weight -->
+        <div class="col-md-6 form-group">
+          <label class="form-label" for="{{ form.jumper_age.id_for_label }}">
+            <i class="bi bi-person text-orange"></i> {{ form.jumper_age.label }}
+          </label>
+          {{ form.jumper_age }}
+          {% if form.jumper_age.errors %}
+            <div class="text-danger small mt-1">{{ form.jumper_age.errors|join:", " }}</div>
+          {% endif %}
+          <div class="form-text small" style="color:#98a0b3;">Must meet minimum package age (18+ for Tandem &amp; AFF).</div>
+        </div>
+
+        <div class="col-md-6 form-group">
+          <label class="form-label" for="{{ form.jumper_weight_kg.id_for_label }}">
+            <i class="bi bi-speedometer text-orange"></i> {{ form.jumper_weight_kg.label }}
+          </label>
+          {{ form.jumper_weight_kg }}
+          {% if form.jumper_weight_kg.errors %}
+            <div class="text-danger small mt-1">{{ form.jumper_weight_kg.errors|join:", " }}</div>
+          {% endif %}
+          <div class="form-text small" style="color:#98a0b3;">Max 100kg for standard tandem equipment safety limits.</div>
+        </div>
+
+        <!-- Notes / Special Requests -->
+        <div class="col-md-12 form-group">
+          <label class="form-label" for="{{ form.notes.id_for_label }}">
+            <i class="bi bi-chat-left-text text-orange"></i> {{ form.notes.label }}
+          </label>
+          {{ form.notes }}
+          {% if form.notes.errors %}
+            <div class="text-danger small mt-1">{{ form.notes.errors|join:", " }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Group Size + Companions -->
+        <div class="col-md-6 form-group">
+          <label class="form-label" for="{{ form.group_size.id_for_label }}">
+            <i class="bi bi-people-fill text-orange"></i> {{ form.group_size.label }}
+          </label>
+          {{ form.group_size }}
+          {% if form.group_size.errors %}
+            <div class="text-danger small mt-1">{{ form.group_size.errors|join:", " }}</div>
+          {% endif %}
+          <div class="form-text small" style="color:#98a0b3;">{{ form.group_size.help_text }}</div>
+        </div>
+      </div>
+
+      <!-- Companions panel (dynamic based on group_size) -->
+      <div id="companionsPanel" class="form-group" style="display:none;background:#0b0f17;border:1px dashed #2a3448;border-radius:14px;padding:1.25rem;margin-bottom:1.5rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:0.5rem;">
+          <div>
+            <div style="font-weight:700;color:#fff;font-size:1rem;"><i class="bi bi-people-fill text-orange"></i> Friends / Companions</div>
+            <div style="color:#98a0b3;font-size:0.82rem;">Add the names and ages of everyone jumping with you.</div>
+          </div>
+        </div>
+        <div id="companionsList"></div>
+      <!-- Pre-rendered companion form templates (server-side) -->
+      <div id="companionTemplates" style="display:none;">
+        {% for cf in companion_forms %}
+          <div class="companion-template" data-index="{{ forloop.counter0 }}">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+              <div style="font-weight:600;color:#ff8a3d;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.04em;">Companion #{{ forloop.counter }}</div>
+            </div>
+            <div class="row g-2">
+              <div class="col-md-5 form-group">
+                <label class="form-label" style="font-size:0.82rem;">Full name</label>
+                {{ cf.full_name }}
+              </div>
+              <div class="col-md-3 form-group">
+                <label class="form-label" style="font-size:0.82rem;">Age</label>
+                {{ cf.age }}
+              </div>
+              <div class="col-md-4 form-group">
+                <label class="form-label" style="font-size:0.82rem;">Weight (kg, optional)</label>
+                {{ cf.weight_kg }}
+              </div>
+            </div>
+            <hr style="border-color:rgba(255,255,255,0.06);margin:0.8rem 0;">
+          </div>
+        {% endfor %}
+      </div>
+      </div>
+
+      <!-- Live Order Assurance Banner -->
+      <div class="pkg-preview-card mb-4" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="font-size:1.4rem;background:rgba(255,106,26,0.12);color:#ff8a3d;padding:8px 12px;border-radius:12px;"><i class="bi bi-shield-check"></i></div>
+          <div>
+            <div style="font-weight:700;color:#fff;">100% Weather Guarantee</div>
+            <div style="color:#98a0b3;font-size:0.85rem;">Free date rescheduling if wind or cloud conditions prevent flight.</div>
+          </div>
+        </div>
+        <div style="font-size:0.85rem;color:#4ade80;font-weight:600;">
+          <i class="bi bi-shield-check"></i> Instant Booking Confirmation
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <a href="{% url 'dropzones:timeslot_list' %}" class="btn btn-ghost" style="border:1px solid #2a3448;color:#c8cee0;padding:10px 20px;border-radius:30px;">
+          &larr; Back to Schedule
+        </a>
+        <button type="submit" class="btn btn-orange" style="background:#ff6a1a;color:#fff;font-weight:700;padding:12px 28px;border-radius:30px;font-size:1rem;border:none;">
+          Proceed to Checkout &rarr;
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // ===== Companion panel: show N rows when group_size > 1 =====
+  (function() {
+    const sizeInput = document.getElementById('{{ form.group_size.id_for_label }}');
+    const panel = document.getElementById('companionsPanel');
+    const list = document.getElementById('companionsList');
+    const templates = Array.from(document.querySelectorAll('.companion-template'));
+
+    function render() {
+      const size = parseInt(sizeInput.value || '1', 10);
+      const companions = Math.max(0, size - 1);
+      list.innerHTML = '';
+      if (companions <= 0) {
+        panel.style.display = 'none';
+        return;
+      }
+      panel.style.display = 'block';
+      for (let i = 0; i < companions && i < templates.length; i++) {
+        const node = templates[i].cloneNode(true);
+        node.style.display = 'block';
+        list.appendChild(node);
+      }
+    }
+    sizeInput.addEventListener('input', render);
+    sizeInput.addEventListener('change', render);
+    render();
+  })();
+</script>
+{% endblock %}

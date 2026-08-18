@@ -1,0 +1,255 @@
+{% extends "skyeman_project/base.html" %}
+{% load humanize %}
+{% block title %}My Bookings — Skyeman{% endblock %}
+{% block marketing_footer %}{% endblock %}
+
+{% block extra_head %}
+<style>
+  .page-head {
+    position: relative;
+    z-index: 1;
+  }
+  .bookings-grid {
+    display: grid;
+    gap: 0.85rem;
+  }
+  .booking-card {
+    display: flex;
+    align-items: center;
+    gap: clamp(0.75rem, 1.5vw, 1.25rem);
+    background: var(--surface);
+    border: 1.5px solid var(--line);
+    border-radius: var(--r-md);
+    padding: clamp(0.6rem, 1vw, 1rem) clamp(0.75rem, 1.5vw, 1.25rem);
+    flex-wrap: wrap;
+    transition: var(--transition);
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+  }
+  .booking-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, var(--orange-dim) 0%, transparent 60%);
+    opacity: 0;
+    transition: var(--transition);
+    pointer-events: none;
+  }
+  .booking-card:hover::before {
+    opacity: 1;
+  }
+  .booking-card:hover {
+    border-color: var(--orange);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+  }
+  .booking-card .slot-date {
+    background: var(--surface-2);
+    color: var(--orange);
+    border-radius: var(--r-md);
+    padding: clamp(4px, 0.8vw, 8px) clamp(8px, 1.5vw, 14px);
+    min-width: clamp(44px, 6vw, 60px);
+    text-align: center;
+    border: 1px solid var(--line);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+  .booking-card .slot-date .d {
+    font-weight: 800;
+    font-size: clamp(1rem, 1.5vw, 1.2rem);
+    line-height: 1;
+  }
+  .booking-card .slot-date .m {
+    font-size: clamp(0.5rem, 0.6vw, 0.65rem);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .booking-card .slot-main {
+    flex: 1;
+    min-width: clamp(120px, 20vw, 180px);
+    position: relative;
+    z-index: 1;
+  }
+  .booking-card .slot-main .title {
+    font-weight: 600;
+    font-size: clamp(0.85rem, 1vw, 1rem);
+    color: var(--text);
+  }
+  .booking-card .slot-main .meta {
+    color: var(--muted);
+    font-size: clamp(0.7rem, 0.8vw, 0.85rem);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .booking-card .slot-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+  
+  @media (max-width: 560px) {
+    .booking-card {
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: stretch;
+      gap: 0.5rem;
+      padding: 0.6rem 0.75rem;
+    }
+    .booking-card .slot-date {
+      flex: 0 0 auto;
+      min-width: 48px;
+      padding: 4px 8px;
+    }
+    .booking-card .slot-date .d { font-size: 0.95rem; }
+    .booking-card .slot-main { flex: 1 1 100%; min-width: 0; }
+    .booking-card .slot-actions {
+      flex: 1 1 100%;
+      justify-content: stretch;
+    }
+    .booking-card .slot-actions .btn {
+      flex: 1;
+      justify-content: center;
+    }
+  }
+  
+  .empty-state {
+    text-align: center;
+    padding: clamp(2rem, 5vw, 3.5rem) 1.5rem;
+    background: var(--surface);
+    border: 2px dashed var(--line);
+    border-radius: var(--r-lg);
+    position: relative;
+    overflow: hidden;
+  }
+  .empty-state .empty-icon {
+    font-size: clamp(3rem, 6vw, 4rem);
+    display: block;
+    margin-bottom: 0.75rem;
+    color: var(--dim);
+    animation: float 3s ease-in-out infinite;
+  }
+  .empty-state h3 {
+    color: var(--text);
+    margin-bottom: 0.5rem;
+  }
+  .empty-state p {
+    color: var(--muted);
+    max-width: 400px;
+    margin: 0 auto 1.25rem;
+  }
+  
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 12px;
+    border-radius: var(--r-pill);
+    font-size: clamp(0.6rem, 0.7vw, 0.7rem);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .status-pill.confirmed {
+    background: rgba(34,197,94,0.12);
+    color: #4ade80;
+    border: 1px solid rgba(34,197,94,0.25);
+  }
+  .status-pill.pending {
+    background: rgba(245,158,11,0.12);
+    color: #fbbf24;
+    border: 1px solid rgba(245,158,11,0.25);
+  }
+  .status-pill.completed {
+    background: rgba(59,130,246,0.12);
+    color: #60a5fa;
+    border: 1px solid rgba(59,130,246,0.25);
+  }
+  .status-pill.cancelled {
+    background: rgba(239,68,68,0.12);
+    color: #f87171;
+    border: 1px solid rgba(239,68,68,0.25);
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-head scroll-animate">
+  <div class="eyebrow">My logbook</div>
+  <div class="flex-between">
+    <div>
+      <h1>My bookings</h1>
+      <p style="margin:0;">Every flight you've booked, past and upcoming.</p>
+    </div>
+    <a class="btn btn-orange btn-sm" href="{% url 'dropzones:timeslot_list' %}">
+      <i class="bi bi-plus-lg"></i> New booking
+    </a>
+  </div>
+</div>
+
+{% if bookings %}
+  <div class="bookings-grid">
+    {% for b in bookings %}
+      <div class="booking-card scroll-animate scroll-animate-delay-{{ forloop.counter|add:1|stringformat:"s"|slice:":1" }}">
+        <div class="slot-date">
+          <div class="d">{{ b.time_slot.date|date:"d" }}</div>
+          <div class="m">{{ b.time_slot.date|date:"M" }}</div>
+        </div>
+        <div class="slot-main">
+          <div class="title">{{ b.time_slot.drop_zone.name }} — {{ b.package.name }}</div>
+          <div class="meta">
+            <span><i class="bi bi-clock"></i> {{ b.time_slot.start_time|time:"H:i" }}</span>
+            <span>·</span>
+            <span><i class="bi bi-person-badge"></i> {{ b.time_slot.instructor|default:"TBA" }}</span>
+            <span>·</span>
+            <span class="status-pill {{ b.status }}">{{ b.get_status_display }}</span>
+            {% if b.payment %}
+              <span>·</span>
+              <span>₦{{ b.payment.amount|floatformat:0|intcomma }}</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="slot-actions">
+          <a class="btn btn-ghost btn-sm" href="{% url 'bookings:detail' b.pk %}">
+            <i class="bi bi-eye"></i> View
+          </a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  
+  {% if bookings|length > 5 %}
+    <div class="actions" style="justify-content:center;margin-top:1.5rem;">
+      <a class="btn btn-ghost" href="#">
+        <i class="bi bi-arrow-down"></i> Load more
+      </a>
+    </div>
+  {% endif %}
+  
+{% else %}
+  <div class="empty-state scroll-animate">
+    <div class="empty-icon"><i class="bi bi-journal-text"></i></div>
+    <h3>No bookings yet</h3>
+    <p>You haven't booked any jumps yet. Time to take the leap!</p>
+    <a class="btn btn-orange" href="{% url 'dropzones:timeslot_list' %}">
+      <i class="bi bi-search"></i> Find a slot
+    </a>
+  </div>
+{% endif %}
+{% endblock %}

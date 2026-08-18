@@ -1,0 +1,144 @@
+{% extends "skyeman_project/base.html" %}
+{% load humanize %}
+{% block title %}Simulated Checkout — Skyeman Lagos{% endblock %}
+
+{% block extra_head %}
+<style>
+  .checkout-container {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+  .checkout-card {
+    background: #141a26;
+    border: 1px solid #232d3f;
+    border-radius: 20px;
+    padding: clamp(1.2rem, 3vw, 2rem);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  }
+  .summary-box {
+    background: #0b0f17;
+    border: 1px solid #232d3f;
+    border-radius: 14px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+  }
+  .summary-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #1f2737;
+    font-size: 0.95rem;
+  }
+  .summary-line:last-child {
+    border-bottom: none;
+  }
+  .form-control {
+    background: #0b0f17 !important;
+    border: 1.5px solid #2a3448 !important;
+    color: #fff !important;
+    border-radius: 10px !important;
+    padding: 10px 14px !important;
+  }
+  .form-control:focus {
+    border-color: #ff6a1a !important;
+    box-shadow: 0 0 0 3px rgba(255,106,26,0.2) !important;
+  }
+  .payment-method-radio {
+    margin-right: 8px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="checkout-container py-4">
+  <div class="page-head mb-4 text-center">
+    <span class="eyebrow" style="background:rgba(255,106,26,0.12);color:#ff8a3d;padding:4px 14px;border-radius:20px;font-size:0.8rem;font-weight:700;text-transform:uppercase;">Step 2 of 2: Checkout</span>
+    <h1 class="mt-2" style="font-weight:800;font-size:clamp(1.8rem, 4vw, 2.4rem);">Complete Simulated Payment</h1>
+    <p class="muted" style="color:#98a0b3;">Review flight summary and complete your simulated checkout to confirm your jump.</p>
+  </div>
+
+  <div class="checkout-card">
+    <h3 style="font-size:1.1rem;font-weight:700;color:#fff;margin-bottom:1rem;">
+      <i class="bi bi-receipt text-orange"></i> Jump Summary
+    </h3>
+
+    <div class="summary-box">
+      <div class="summary-line">
+        <span class="text-muted" style="color:#98a0b3;">Drop Zone</span>
+        <span style="font-weight:700;color:#fff;">{{ booking.time_slot.drop_zone.name }}</span>
+      </div>
+      <div class="summary-line">
+        <span class="text-muted" style="color:#98a0b3;">Flight Date &amp; Time</span>
+        <span style="font-weight:700;color:#fff;">{{ booking.time_slot.date|date:"l, M d, Y" }} @ {{ booking.time_slot.start_time|time:"h:i A" }}</span>
+      </div>
+      <div class="summary-line">
+        <span class="text-muted" style="color:#98a0b3;">Package Selected</span>
+        <span style="font-weight:700;color:#ff8a3d;">{{ booking.package.name }} ({{ booking.package.duration_minutes }} mins)</span>
+      </div>
+      <div class="summary-line">
+        <span class="text-muted" style="color:#98a0b3;">Assigned Instructor</span>
+        <span style="font-weight:600;color:#e8ecf5;">{{ booking.time_slot.instructor.name|default:"USPA Jumpmaster Assigned on Arrival" }}</span>
+      </div>
+      <div class="summary-line pt-2" style="font-size:1.15rem;font-weight:800;">
+        <span style="color:#fff;">Total Amount Due:</span>
+        <span style="color:#ff6a1a;font-size:1.4rem;">₦{{ booking.total_price|floatformat:0|intcomma }}</span>
+      </div>
+    </div>
+
+    <form method="post" id="payForm">
+      {% csrf_token %}
+
+      <div class="mb-3">
+        <label class="form-label" style="font-weight:700;color:#fff;display:block;margin-bottom:0.5rem;">Select Payment Method</label>
+        <div style="background:#0b0f17;border:1px solid #232d3f;border-radius:10px;padding:12px 16px;">
+          <div class="form-check mb-2">
+            <input class="form-check-input payment-method-radio" type="radio" name="method" id="payCard" value="card" checked>
+            <label class="form-check-label text-white" for="payCard">
+              <i class="bi bi-credit-card-2-front text-orange"></i> Credit / Debit Card (Simulated Instant Clearance)
+            </label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input payment-method-radio" type="radio" name="method" id="payPaypal" value="paypal">
+            <label class="form-check-label text-white" for="payPaypal">
+              <i class="bi bi-paypal text-primary"></i> PayPal Sandbox (Simulated Checkout)
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-2 mb-3">
+        <div class="col-12">
+          <label class="form-label small text-muted" style="color:#98a0b3;">Cardholder Name</label>
+          {{ form.card_name }}
+        </div>
+        <div class="col-12">
+          <label class="form-label small text-muted" style="color:#98a0b3;">Card Number</label>
+          {{ form.card_number }}
+        </div>
+        <div class="col-6">
+          <label class="form-label small text-muted" style="color:#98a0b3;">Expiration (MM/YY)</label>
+          {{ form.card_expiry }}
+        </div>
+        <div class="col-6">
+          <label class="form-label small text-muted" style="color:#98a0b3;">CVV Security Code</label>
+          {{ form.card_cvv }}
+        </div>
+      </div>
+
+      <div class="alert alert-info py-2 px-3 mb-4" style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:10px;font-size:0.85rem;color:#93c5fd;">
+        <i class="bi bi-info-circle-fill"></i> <strong>Simulation Mode:</strong> All payments are processed instantly for demonstration purposes without real bank charges.
+      </div>
+
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <a href="{% url 'bookings:detail' booking.pk %}" class="btn btn-ghost" style="border:1px solid #2a3448;color:#c8cee0;padding:10px 18px;border-radius:30px;">
+          Cancel &amp; Save as Pending
+        </a>
+        <button type="submit" class="btn btn-orange" style="background:#ff6a1a;color:#fff;font-weight:700;padding:12px 28px;border-radius:30px;font-size:1.05rem;border:none;">
+          <i class="bi bi-shield-lock-fill"></i> Pay ₦{{ booking.total_price|floatformat:0|intcomma }} &amp; Confirm Jump
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

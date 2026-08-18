@@ -1,0 +1,63 @@
+{% extends "skyeman_project/base.html" %}
+{% load static %}
+{% block title %}Contact — Skyeman{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div class="eyebrow">Contact</div>
+  <h1>Get in touch</h1>
+  <p>Booking questions, partnership enquiries, or just want to say hi — we're easy to reach.</p>
+</div>
+
+<div class="grid grid-3">
+  <div class="card">
+    <div class="card-body">
+      <span class="pill"><i class="bi bi-envelope"></i> Email</span>
+      <h3 class="mt-2">hello@skyeman.com</h3>
+      <p class="muted mb-0">We reply within one business day.</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <span class="pill"><i class="bi bi-telephone"></i> Phone</span>
+      <h3 class="mt-2">+234 800 SKYEMAN</h3>
+      <p class="muted mb-0">Mon–Sat, 9 am – 6 pm WAT.</p>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-body">
+      <span class="pill"><i class="bi bi-geo-alt"></i> HQ</span>
+      <h3 class="mt-2">14 Alexander Avenue</h3>
+      <p class="muted mb-0">Ikoyi, Lagos, Nigeria.</p>
+    </div>
+  </div>
+</div>
+
+<div class="page-head mt-section">
+  <div class="eyebrow">Our locations</div>
+  <h2>Drop zones</h2>
+</div>
+
+<div class="grid grid-3">
+  {% for dz in drop_zones %}
+    <div class="card">
+      <div class="card-body">
+        <span class="pill"><i class="bi bi-geo-alt"></i> {{ dz.city }}</span>
+        <h3 class="mt-2">{{ dz.name }}</h3>
+        <p class="dim mb-1"><i class="bi bi-pin-map"></i> {{ dz.address }}</p>
+        <a class="card-cta" href="{% url 'dropzones:dropzone_detail' dz.pk %}">View <i class="bi bi-arrow-right"></i></a>
+      </div>
+    </div>
+  {% empty %}
+    <div class="empty">No drop zones configured.</div>
+  {% endfor %}
+</div>
+
+<div class="mt-section">
+  <div class="newsletter-section">
+    <h2>Prefer to chat?</h2>
+    <p>Use our AI assistant in the bottom-right corner — it's available 24/7 to answer your questions.</p>
+    <button class="btn btn-orange" onclick="document.getElementById('chatToggle').click();">Open chat assistant</button>
+  </div>
+</div>
+{% endblock %}
