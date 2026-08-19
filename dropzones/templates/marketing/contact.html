@@ -12,21 +12,21 @@
 <div class="grid grid-3">
   <div class="card">
     <div class="card-body">
-      <span class="pill"><i class="bi bi-envelope"></i> Email</span>
+      <span class="pill"> Email</span>
       <h3 class="mt-2">hello@skyeman.com</h3>
       <p class="muted mb-0">We reply within one business day.</p>
     </div>
   </div>
   <div class="card">
     <div class="card-body">
-      <span class="pill"><i class="bi bi-telephone"></i> Phone</span>
+      <span class="pill"> Phone</span>
       <h3 class="mt-2">+234 800 SKYEMAN</h3>
       <p class="muted mb-0">Mon–Sat, 9 am – 6 pm WAT.</p>
     </div>
   </div>
   <div class="card">
     <div class="card-body">
-      <span class="pill"><i class="bi bi-geo-alt"></i> HQ</span>
+      <span class="pill"> HQ</span>
       <h3 class="mt-2">14 Alexander Avenue</h3>
       <p class="muted mb-0">Ikoyi, Lagos, Nigeria.</p>
     </div>
@@ -42,10 +42,10 @@
   {% for dz in drop_zones %}
     <div class="card">
       <div class="card-body">
-        <span class="pill"><i class="bi bi-geo-alt"></i> {{ dz.city }}</span>
+        <span class="pill"> {{ dz.city }}</span>
         <h3 class="mt-2">{{ dz.name }}</h3>
-        <p class="dim mb-1"><i class="bi bi-pin-map"></i> {{ dz.address }}</p>
-        <a class="card-cta" href="{% url 'dropzones:dropzone_detail' dz.pk %}">View <i class="bi bi-arrow-right"></i></a>
+        <p class="dim mb-1"> {{ dz.address }}</p>
+        <a class="card-cta" href="{% url 'dropzones:dropzone_detail' dz.pk %}">View </a>
       </div>
     </div>
   {% empty %}

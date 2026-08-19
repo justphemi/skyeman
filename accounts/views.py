@@ -19,7 +19,14 @@ class SignUpView(CreateView):
     success_url = reverse_lazy("accounts:dashboard")
 
     def form_valid(self, form):
+        # Let CreateView.form_valid save the user first (so self.object is set,
+        # the user has a pk, and the password is hashed exactly once).
         response = super().form_valid(form)
+        # IMPORTANT: login() must happen AFTER super().form_valid() because that's
+        # where the user is persisted to the DB. The response from super() is
+        # an HttpResponseRedirect — Django's session middleware will still attach
+        # the session cookie to that response (login() modifies request.session
+        # which the middleware reads when building the response).
         login(self.request, self.object)
         messages.success(self.request, f"Welcome to Skyeman, {self.object.first_name or self.object.username}!")
         return response
@@ -29,7 +36,11 @@ class SkyemanLoginView(LoginView):
     """Branded login view supporting username or email login."""
     template_name = "accounts/login.html"
     authentication_form = EmailAuthenticationForm
-    redirect_authenticated_user = True
+    # NOTE: do NOT set redirect_authenticated_user=True — LOGIN_REDIRECT_URL points
+    # to /accounts/dashboard/ which is @login_required, creating an infinite loop
+    # (login → dashboard → login → dashboard) for already-authenticated users who
+    # somehow end up on /login/. Leave the default False: an already-logged-in user
+    # just sees the login form (with a friendly notice in the template).
 
     def form_valid(self, form):
         user = form.get_user()

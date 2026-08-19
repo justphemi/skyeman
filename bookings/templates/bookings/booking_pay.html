@@ -60,7 +60,7 @@
 
   <div class="checkout-card">
     <h3 style="font-size:1.1rem;font-weight:700;color:#fff;margin-bottom:1rem;">
-      <i class="bi bi-receipt text-orange"></i> Jump Summary
+       Jump Summary
     </h3>
 
     <div class="summary-box">
@@ -95,13 +95,13 @@
           <div class="form-check mb-2">
             <input class="form-check-input payment-method-radio" type="radio" name="method" id="payCard" value="card" checked>
             <label class="form-check-label text-white" for="payCard">
-              <i class="bi bi-credit-card-2-front text-orange"></i> Credit / Debit Card (Simulated Instant Clearance)
+               Credit / Debit Card (Simulated Instant Clearance)
             </label>
           </div>
           <div class="form-check">
             <input class="form-check-input payment-method-radio" type="radio" name="method" id="payPaypal" value="paypal">
             <label class="form-check-label text-white" for="payPaypal">
-              <i class="bi bi-paypal text-primary"></i> PayPal Sandbox (Simulated Checkout)
+               PayPal Sandbox (Simulated Checkout)
             </label>
           </div>
         </div>
@@ -127,7 +127,7 @@
       </div>
 
       <div class="alert alert-info py-2 px-3 mb-4" style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:10px;font-size:0.85rem;color:#93c5fd;">
-        <i class="bi bi-info-circle-fill"></i> <strong>Simulation Mode:</strong> All payments are processed instantly for demonstration purposes without real bank charges.
+         <strong>Simulation Mode:</strong> All payments are processed instantly for demonstration purposes without real bank charges.
       </div>
 
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
@@ -135,7 +135,7 @@
           Cancel &amp; Save as Pending
         </a>
         <button type="submit" class="btn btn-orange" style="background:#ff6a1a;color:#fff;font-weight:700;padding:12px 28px;border-radius:30px;font-size:1.05rem;border:none;">
-          <i class="bi bi-shield-lock-fill"></i> Pay ₦{{ booking.total_price|floatformat:0|intcomma }} &amp; Confirm Jump
+           Pay ₦{{ booking.total_price|floatformat:0|intcomma }} &amp; Confirm Jump
         </button>
       </div>
     </form>

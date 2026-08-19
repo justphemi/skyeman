@@ -1,0 +1,221 @@
+{% extends "skyeman_project/base.html" %}
+{% load humanize %}
+{% block title %}Pick a package — Skyeman{% endblock %}
+{% block marketing_footer %}{% endblock %}
+
+{% block extra_head %}
+<style>
+  .wizard-wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 1rem 0 3rem;
+  }
+  .step-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .step-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #98a0b3;
+  }
+  .step-pill.is-done {
+    background: rgba(34, 197, 94, 0.08);
+    border-color: rgba(34, 197, 94, 0.3);
+    color: #4ade80;
+  }
+  .step-pill.is-active {
+    background: rgba(255, 106, 26, 0.12);
+    border-color: rgba(255, 106, 26, 0.4);
+    color: #ff8a3d;
+  }
+  .step-bar .arrow {
+    color: #4b5563;
+    font-weight: 700;
+  }
+
+  .pkg-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .pkg-card {
+    background: #141a26;
+    border: 2px solid #232d3f;
+    border-radius: 16px;
+    padding: 1.25rem;
+    cursor: pointer;
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .pkg-card:hover {
+    border-color: #ff6a1a;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 106, 26, 0.15);
+  }
+  .pkg-card.is-selected,
+  .pkg-card:has(input[type="radio"]:checked) {
+    border-color: #ff6a1a;
+    background: rgba(255, 106, 26, 0.05);
+    box-shadow: 0 0 0 2px rgba(255, 106, 26, 0.25);
+  }
+  .pkg-card:has(input[type="radio"]:checked)::after {
+    content: '✓';
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #ff6a1a;
+    color: #fff;
+    font-weight: 800;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 4px rgba(255, 106, 26, 0.18);
+  }
+  .pkg-card input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .pkg-card .pkg-name {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 0.25rem;
+  }
+  .pkg-card .pkg-price {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #ff8a3d;
+    margin: 0.4rem 0 0.6rem;
+  }
+  .pkg-card .pkg-desc {
+    font-size: 0.88rem;
+    color: #cbd1dc;
+    line-height: 1.55;
+    margin-bottom: 0.85rem;
+    flex: 1;
+  }
+  .pkg-card .pkg-tags {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    font-size: 0.75rem;
+    color: #98a0b3;
+  }
+  .pkg-card .pkg-tags span {
+    background: #0b0f17;
+    border: 1px solid #232d3f;
+    border-radius: 999px;
+    padding: 4px 10px;
+  }
+
+  .actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    gap: 1rem;
+  }
+  .actions .left {
+    color: #98a0b3;
+    font-size: 0.88rem;
+  }
+
+  .breadcrumb {
+    color: #98a0b3;
+    font-size: 0.88rem;
+    margin-bottom: 1rem;
+  }
+  .breadcrumb a {
+    color: #ff8a3d;
+    text-decoration: none;
+  }
+
+  .eyebrow {
+    color: #ff6a1a;
+    font-weight: 700;
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+  .page-title {
+    font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 0.4rem;
+  }
+  .page-sub {
+    color: #98a0b3;
+    font-size: 1rem;
+    margin-bottom: 1.6rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wizard-wrap">
+  <div class="step-bar">
+    <span class="step-pill is-done">Step 1 &middot; {{ dropzone.name }}</span>
+    <span class="arrow">&rarr;</span>
+    <span class="step-pill is-active">Step 2 of {{ total_steps }} &middot; Package</span>
+    <span class="arrow">&rarr;</span>
+    <span class="step-pill">Time slot</span>
+    <span class="arrow">&rarr;</span>
+    <span class="step-pill">Details</span>
+  </div>
+
+
+  <div class="eyebrow">Choose your experience</div>
+  <h1 class="page-title">Pick a jump package</h1>
+  <p class="page-sub">All packages include full safety briefing, ground school, and gear rental. Pricing per jumper.</p>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="pkg-grid">
+      {% for pkg in packages %}
+        <label class="pkg-card {% if selected_id == pkg.id %}is-selected{% endif %}" for="pkg-{{ pkg.id }}">
+          <input type="radio" name="package" id="pkg-{{ pkg.id }}" value="{{ pkg.id }}" {% if selected_id == pkg.id %}checked{% endif %} required>
+          <div class="pkg-name">{{ pkg.name }}</div>
+          <div class="pkg-price">&#8358;{{ pkg.price|floatformat:0|intcomma }}</div>
+          <div class="pkg-desc">{{ pkg.description }}</div>
+          <div class="pkg-tags">
+            <span>{{ pkg.min_age }}+ years</span>
+            <span>Up to {{ pkg.max_weight_kg }} kg</span>
+            <span>{{ pkg.duration_minutes }} min total</span>
+          </div>
+        </label>
+      {% empty %}
+        <div class="pkg-card" style="cursor:default;">
+          <div class="pkg-name">No packages yet</div>
+          <div class="pkg-desc">The admin hasn't set up any packages yet. Check back shortly.</div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="actions">
+      <a class="btn btn-ghost" href="{% url 'bookings:step_dropzone' %}" style="padding:10px 22px;">&larr; Back</a>
+      <button type="submit" class="btn btn-orange" style="padding:12px 28px;font-weight:700;">
+        Continue to time slot
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

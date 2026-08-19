@@ -186,7 +186,7 @@ p { margin: 0 0 1rem; color: var(--text); }
   background: #141a26;
   border: 1px solid var(--line);
   color: var(--text);
-  font-size: 1.4rem;
+  font-size: 0.7rem;
   padding: 8px 14px;
   border-radius: var(--r-sm);
   cursor: pointer;

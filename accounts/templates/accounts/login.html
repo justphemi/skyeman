@@ -4,6 +4,11 @@
 
 {% block extra_head %}
 <style>
+  /* ===== Lift navbar above the auth-page overlay (z-index:10) so it stays visible & sticky ===== */
+  body.template-auth .nav-bar,
+  .nav-bar { z-index: 2000 !important; background: rgba(11, 15, 23, 0.96); top: 0 !important; padding: 0 !important; }
+  .nav-bar .nav-inner-desktop, .nav-bar .nav-inner-mobile { padding: 0 !important; }
+
   /* ===== FULL SCREEN BACKGROUND CAROUSEL ===== */
   .auth-page {
     min-height: 100vh;
@@ -86,7 +91,6 @@
     background: radial-gradient(ellipse at center, transparent 30%, rgba(11, 15, 23, 0.4) 100%);
   }
   
-  /* ===== WIZARD CONTAINER ===== */
   .wizard-container {
     position: relative;
     z-index: 20;
@@ -126,7 +130,6 @@
     opacity: 0.3;
   }
   
-  /* ===== GRAPHIC ===== */
   .wizard-graphic {
     text-align: center;
     margin-bottom: 1.5rem;
@@ -152,7 +155,6 @@
     margin-bottom: 0;
   }
   
-  /* ===== PROGRESS ===== */
   .wizard-progress {
     display: flex;
     justify-content: center;
@@ -190,7 +192,6 @@
     background: var(--green);
   }
   
-  /* ===== STEPS ===== */
   .wizard-step {
     display: none;
     animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
@@ -212,7 +213,6 @@
     animation: slideOut 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
   
-  /* ===== FORM ===== */
   .form-group-wizard {
     margin-bottom: 1.25rem;
     position: relative;
@@ -298,7 +298,6 @@
   }
   .password-toggle:hover { color: #fff; }
   
-  /* ===== ACTIONS ===== */
   .wizard-actions {
     display: flex;
     gap: 0.75rem;
@@ -346,7 +345,6 @@
   }
   .wizard-footer a:hover { color: var(--orange); }
   
-  /* ===== BRAND BADGE ===== */
   .auth-brand {
     position: fixed;
     top: 2rem;
@@ -372,7 +370,6 @@
     line-height: 1;
   }
   
-  /* ===== SLIDE INDICATORS ===== */
   .auth-slide-indicators {
     position: fixed;
     bottom: 2rem;
@@ -396,7 +393,6 @@
     border-radius: 4px;
   }
   
-  /* ===== RESPONSIVE ===== */
   @media (max-width: 560px) {
     .auth-brand {
       top: 1rem;
@@ -404,7 +400,7 @@
       font-size: 1.1rem;
     }
     .auth-brand .dot { font-size: 1.4rem; }
-    .auth-slide-indicators { bottom: 1rem;display: hidden; }
+    .auth-slide-indicators { bottom: 1rem; display: none; }
     .auth-page { padding: 0.5rem; }
     .wizard-card { padding: 1.25rem; }
   }
@@ -422,6 +418,26 @@
     }
     .auth-brand { display: none; }
   }
+
+  /* Error message styling */
+  .form-error {
+    margin-top: 1rem;
+    text-align: center;
+    padding: 0.75rem;
+    background: rgba(239, 68, 68, 0.15);
+    border-radius: var(--r-md);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    font-size: clamp(0.8rem, 0.9vw, 0.85rem);
+  }
+  .form-error ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .form-error li {
+    margin: 0;
+  }
 </style>
 {% endblock %}
 
@@ -432,7 +448,7 @@
   <div class="slide" style="background-image: url('https://i.pinimg.com/736x/2b/0c/c0/2b0cc090855e93a1c86fa96df7eb84df.jpg');"></div>
   <div class="slide" style="background-image: url('https://i.pinimg.com/736x/ab/ef/40/abef4083daaaa8427d0244bccbe692b0.jpg');"></div>
   <div class="slide" style="background-image: url('https://i.pinimg.com/736x/4e/aa/f5/4eaaf59d2dbeb533133004bbc09f8c0c.jpg');"></div>
-  <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1529928520614-7c76e2d99740?w=1200&q=80');"></div>
+  <div class="slide" style="background-image: url('https://i.pinimg.com/474x/9e/79/a7/9e79a7f6cb94d8355cca9b1e62ae8bed.jpg');"></div>
 </div>
 
 <!-- ===== OVERLAY ===== -->
@@ -449,7 +465,7 @@
     <div class="wizard-card">
       <!-- Graphic -->
       <div class="wizard-graphic">
-        <div class="wizard-icon" style="font-size:3rem;color:var(--orange);margin-bottom:0.5rem;"><i class="bi bi-box-arrow-in-right"></i></div>
+        <div class="wizard-icon" style="font-size:3rem;color:var(--orange);margin-bottom:0.5rem;"></div>
         <h2>Welcome back</h2>
         <p>Sign in to continue your skydiving journey</p>
       </div>
@@ -464,25 +480,25 @@
       <form method="post" id="loginForm" novalidate>
         {% csrf_token %}
         
-        <!-- Step 1: Username/Email -->
+        <!-- Step 1: Email -->
         <div class="wizard-step active" data-step="1">
           <div class="form-group-wizard">
             <label class="form-label" for="id_username">Email address</label>
             <div class="input-wrap">
-              <input type="text" id="id_username" name="username" 
+              <input type="email" id="id_username" name="username" 
                      placeholder="Enter your email"
-                     autocomplete="username"
+                     autocomplete="email"
                      required
-                     pattern="^[a-zA-Z0-9@._-]{3,}$"
-                     data-validate="username">
-              <i class="bi bi-person input-icon" id="usernameIcon"></i>
+                     data-validate="email"
+                     value="{{ form.username.value|default:'' }}">
+              <span class="input-icon" id="usernameIcon"></span>
             </div>
-            <!-- <div class="validation-feedback" id="usernameFeedback">
-              <span>Enter your username or email address</span>
-            </div> -->
+            <div class="validation-feedback" id="usernameFeedback">
+              <span>Enter your email address</span>
+            </div>
           </div>
           <div class="wizard-actions">
-            <button type="button" class="btn btn-orange" onclick="nextStep(1)">Continue <i class="bi bi-arrow-right"></i></button>
+            <button type="button" class="btn btn-orange" id="continueBtn">Continue →</button>
           </div>
         </div>
 
@@ -497,13 +513,14 @@
                      required
                      minlength="6"
                      data-validate="password">
-              <button type="button" class="password-toggle" onclick="togglePassword()" tabindex="-1">
-                <i class="bi bi-eye" id="passwordIcon"></i>
+              <button type="button" class="password-toggle" id="passwordToggle" tabindex="-1">
+                👁️
               </button>
+              <span class="input-icon" id="passwordIcon"></span>
             </div>
-            <!-- <div class="validation-feedback" id="passwordFeedback">
+            <div class="validation-feedback" id="passwordFeedback">
               <span>Enter your password (min. 6 characters)</span>
-            </div> -->
+            </div>
           </div>
           
           <div style="text-align:right;margin:-0.5rem 0 0.5rem;font-size:clamp(0.7rem,0.8vw,0.8rem);">
@@ -511,11 +528,9 @@
           </div>
 
           <div class="wizard-actions">
-            <button type="button" class="btn btn-ghost btn-back" onclick="prevStep(2)">
-              <i class="bi bi-arrow-left"></i> Back
-            </button>
+            <button type="button" class="btn btn-ghost btn-back" id="backBtn">← Back</button>
             <button type="submit" class="btn btn-orange" id="submitBtn">
-              <span id="submitText">Sign in <i class="bi bi-box-arrow-in-right"></i></span>
+              <span id="submitText">Sign in →</span>
               <span id="submitLoading" style="display:none;">
                 <span class="spinner"></span> Signing in...
               </span>
@@ -523,10 +538,34 @@
           </div>
         </div>
 
-        <!-- Hidden fields for errors -->
+        <!-- Display form errors -->
         {% if form.non_field_errors %}
-          <div class="form-error" style="margin-top:1rem;text-align:center;padding:0.75rem;background:rgba(239,68,68,0.15);border-radius:var(--r-md);border:1px solid rgba(239,68,68,0.2);color:#f87171;">
-            {{ form.non_field_errors|join:", " }}
+          <div class="form-error" style="margin-top:1rem;">
+            <ul>
+              {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+
+        <!-- Display field errors -->
+        {% if form.username.errors %}
+          <div class="form-error" style="margin-top:0.5rem;">
+            <ul>
+              {% for error in form.username.errors %}
+                <li>{{ error }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        {% endif %}
+        {% if form.password.errors %}
+          <div class="form-error" style="margin-top:0.5rem;">
+            <ul>
+              {% for error in form.password.errors %}
+                <li>{{ error }}</li>
+              {% endfor %}
+            </ul>
           </div>
         {% endif %}
       </form>
@@ -540,11 +579,11 @@
 
 <!-- ===== SLIDE INDICATORS ===== -->
 <div class="auth-slide-indicators" id="slideIndicators">
-  <!-- <span class="indicator active" data-index="0"></span>
+  <span class="indicator active" data-index="0"></span>
   <span class="indicator" data-index="1"></span>
   <span class="indicator" data-index="2"></span>
   <span class="indicator" data-index="3"></span>
-  <span class="indicator" data-index="4"></span> -->
+  <span class="indicator" data-index="4"></span>
 </div>
 
 <script>
@@ -560,7 +599,6 @@
         slide.classList.remove('active', 'zooming');
         if (i === index) {
           slide.classList.add('active');
-          // Add zooming after a small delay for smooth transition
           setTimeout(() => slide.classList.add('zooming'), 100);
         }
       });
@@ -580,16 +618,14 @@
       interval = setInterval(nextSlide, 5000);
     }
 
-    // Click indicators to go to specific slide
     indicators.forEach(ind => {
       ind.addEventListener('click', function() {
         const index = parseInt(this.dataset.index);
         goToSlide(index);
-        startCarousel(); // Reset timer
+        startCarousel();
       });
     });
 
-    // Touch/swipe support
     let touchStartX = 0;
     let touchEndX = 0;
     const container = document.querySelector('.auth-page');
@@ -613,74 +649,85 @@
       }
     }, { passive: true });
 
-    // Start carousel
     startCarousel();
 
-    // Pause on hover
     const bgContainer = document.querySelector('.auth-bg-carousel');
-    bgContainer.addEventListener('mouseenter', () => clearInterval(interval));
-    bgContainer.addEventListener('mouseleave', startCarousel);
+    if (bgContainer) {
+      bgContainer.addEventListener('mouseenter', () => clearInterval(interval));
+      bgContainer.addEventListener('mouseleave', startCarousel);
+    }
   })();
 
   // ===== WIZARD STATE =====
   let currentStep = 1;
-  const totalSteps = 2;
   let isSubmitting = false;
 
   // ===== VALIDATION RULES =====
   const validators = {
-    username: function(value) {
-      if (value.length < 3) return { valid: false, message: 'Minimum 3 characters' };
-      if (!/^[a-zA-Z0-9@._-]+$/.test(value)) return { valid: false, message: 'Invalid characters' };
-      return { valid: true, message: 'Looks good!' };
+    email: function(value) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!value.trim()) {
+        return { valid: false, message: 'Email is required' };
+      }
+      if (!emailRegex.test(value.trim())) {
+        return { valid: false, message: 'Enter a valid email address' };
+      }
+      return { valid: true, message: 'Email looks good!' };
     },
     password: function(value) {
-      if (value.length < 6) return { valid: false, message: 'Minimum 6 characters' };
-      if (value.length > 100) return { valid: false, message: 'Too long' };
+      if (!value) {
+        return { valid: false, message: 'Password is required' };
+      }
+      if (value.length < 6) {
+        return { valid: false, message: 'Minimum 6 characters' };
+      }
       return { valid: true, message: 'Password looks good' };
     }
   };
 
-  // ===== STEP MANAGEMENT =====
-  function nextStep(fromStep) {
-    const stepEl = document.querySelector(`.wizard-step[data-step="${fromStep}"]`);
-    const inputs = stepEl.querySelectorAll('input[data-validate]');
-    let allValid = true;
+  // ===== VALIDATE FIELD FUNCTION =====
+  function validateField(input) {
+    const validateType = input.dataset.validate;
+    const value = input.value;
+    const feedback = document.getElementById(input.id + 'Feedback');
+    const icon = document.getElementById(input.id + 'Icon');
+    
+    if (!validateType || !validators[validateType]) {
+      return true;
+    }
 
-    inputs.forEach(input => {
-      if (!validateField(input)) allValid = false;
-    });
+    const result = validators[validateType](value);
+    
+    // Clear previous states
+    input.classList.remove('error', 'success');
+    if (feedback) {
+      feedback.classList.remove('error', 'success');
+    }
 
-    if (!allValid) return;
-
-    const nextStepEl = document.querySelector(`.wizard-step[data-step="${fromStep + 1}"]`);
-    if (!nextStepEl) return;
-
-    stepEl.classList.add('exit');
-    setTimeout(() => {
-      stepEl.classList.remove('active', 'exit');
-      nextStepEl.classList.add('active');
-      currentStep = fromStep + 1;
-      updateProgress();
-      const firstInput = nextStepEl.querySelector('input');
-      if (firstInput) setTimeout(() => firstInput.focus(), 300);
-    }, 300);
+    if (!result.valid) {
+      input.classList.add('error');
+      if (feedback) {
+        feedback.classList.add('error');
+        feedback.innerHTML = `<span>${result.message}</span>`;
+      }
+      if (icon) {
+        icon.className = 'input-icon error bi bi-exclamation-circle-fill';
+      }
+      return false;
+    } else {
+      input.classList.add('success');
+      if (feedback) {
+        feedback.classList.add('success');
+        feedback.innerHTML = `<span>${result.message}</span>`;
+      }
+      if (icon) {
+        icon.className = 'input-icon success bi bi-check-circle-fill';
+      }
+      return true;
+    }
   }
 
-  function prevStep(fromStep) {
-    const stepEl = document.querySelector(`.wizard-step[data-step="${fromStep}"]`);
-    const prevStepEl = document.querySelector(`.wizard-step[data-step="${fromStep - 1}"]`);
-    if (!prevStepEl) return;
-
-    stepEl.classList.add('exit');
-    setTimeout(() => {
-      stepEl.classList.remove('active', 'exit');
-      prevStepEl.classList.add('active');
-      currentStep = fromStep - 1;
-      updateProgress();
-    }, 300);
-  }
-
+  // ===== UPDATE PROGRESS =====
   function updateProgress() {
     const dots = document.querySelectorAll('.wizard-progress .dot');
     const lines = document.querySelectorAll('.wizard-progress .dot-line');
@@ -688,8 +735,11 @@
     dots.forEach((dot, index) => {
       const step = index + 1;
       dot.classList.remove('active', 'done');
-      if (step === currentStep) dot.classList.add('active');
-      else if (step < currentStep) dot.classList.add('done');
+      if (step === currentStep) {
+        dot.classList.add('active');
+      } else if (step < currentStep) {
+        dot.classList.add('done');
+      }
     });
     
     lines.forEach((line, index) => {
@@ -698,89 +748,103 @@
     });
   }
 
-  function validateField(input) {
-    const validator = validators[input.dataset.validate];
-    if (!validator) return true;
-
-    const value = input.value.trim();
-    const result = validator(value);
-    const feedback = document.getElementById(input.id + 'Feedback');
-    const icon = document.getElementById(input.id + 'Icon') || 
-                 input.closest('.input-wrap')?.querySelector('.input-icon');
-
-    input.classList.remove('error', 'success');
-    if (icon) icon.className = 'bi input-icon';
-
-    if (value === '') {
-      if (feedback) feedback.innerHTML = `<span>This field is required</span>`;
-      feedback?.classList.remove('success', 'error');
-      return false;
+  // ===== STEP MANAGEMENT =====
+  function goToStep(step) {
+    const currentStepEl = document.querySelector(`.wizard-step[data-step="${currentStep}"]`);
+    const targetStepEl = document.querySelector(`.wizard-step[data-step="${step}"]`);
+    
+    if (!currentStepEl || !targetStepEl) return;
+    
+    // Validate current step before moving forward
+    if (step > currentStep) {
+      const inputs = currentStepEl.querySelectorAll('input[data-validate]');
+      let allValid = true;
+      inputs.forEach(input => {
+        if (!validateField(input)) allValid = false;
+      });
+      if (!allValid) return;
     }
+    
+    currentStepEl.classList.add('exit');
+    setTimeout(() => {
+      currentStepEl.classList.remove('active', 'exit');
+      targetStepEl.classList.add('active');
+      currentStep = step;
+      updateProgress();
+      const firstInput = targetStepEl.querySelector('input');
+      if (firstInput) setTimeout(() => firstInput.focus(), 300);
+    }, 300);
+  }
 
-    if (result.valid) {
-      input.classList.add('success');
-      if (icon) icon.className = 'bi bi-check-circle input-icon success';
-      if (feedback) {
-        feedback.innerHTML = `<i class="bi bi-check-circle"></i> ${result.message}`;
-        feedback.classList.add('success');
-        feedback.classList.remove('error');
-      }
-      return true;
-    } else {
-      input.classList.add('error');
-      if (icon) icon.className = 'bi bi-x-circle input-icon error';
-      if (feedback) {
-        feedback.innerHTML = `<i class="bi bi-x-circle"></i> ${result.message}`;
-        feedback.classList.add('error');
-        feedback.classList.remove('success');
-      }
-      return false;
+  function nextStep(fromStep) {
+    goToStep(fromStep + 1);
+  }
+
+  function prevStep(fromStep) {
+    if (fromStep > 1) {
+      goToStep(fromStep - 1);
     }
   }
 
-  document.querySelectorAll('input[data-validate]').forEach(input => {
-    input.addEventListener('input', function() {
-      validateField(this);
-    });
-    
-    input.addEventListener('blur', function() {
-      if (this.value.trim()) validateField(this);
-    });
-
-    if (input.closest('.wizard-step[data-step="1"]')) {
-      input.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          const step = parseInt(this.closest('.wizard-step').dataset.step);
-          nextStep(step);
-        }
-      });
+  // ===== PASSWORD TOGGLE =====
+  document.getElementById('passwordToggle')?.addEventListener('click', function() {
+    const passwordInput = document.getElementById('id_password');
+    if (passwordInput) {
+      const isPassword = passwordInput.getAttribute('type') === 'password';
+      passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+      this.textContent = isPassword ? '👁️‍🗨️' : '👁️';
     }
   });
 
-  function togglePassword() {
-    const input = document.getElementById('id_password');
-    const icon = document.getElementById('passwordIcon');
-    if (input.type === 'password') {
-      input.type = 'text';
-      icon.className = 'bi bi-eye-slash';
-    } else {
-      input.type = 'password';
-      icon.className = 'bi bi-eye';
-    }
-  }
-
-  document.getElementById('loginForm').addEventListener('submit', function(e) {
+  // ===== CONTINUE BUTTON =====
+  document.getElementById('continueBtn')?.addEventListener('click', function(e) {
     e.preventDefault();
-    if (isSubmitting) return;
+    nextStep(1);
+  });
 
-    const stepEl = document.querySelector(`.wizard-step[data-step="${currentStep}"]`);
-    const inputs = stepEl.querySelectorAll('input[data-validate]');
+  // ===== BACK BUTTON =====
+  document.getElementById('backBtn')?.addEventListener('click', function(e) {
+    e.preventDefault();
+    prevStep(2);
+  });
+
+  // ===== KEYBOARD SHORTCUTS =====
+  document.addEventListener('keydown', function(e) {
+    // Escape to go back
+    if (e.key === 'Escape' && currentStep > 1) {
+      e.preventDefault();
+      prevStep(currentStep);
+    }
+    // Enter to advance from step 1
+    if (e.key === 'Enter' && currentStep === 1) {
+      const activeInput = document.activeElement;
+      if (activeInput && activeInput.closest('.wizard-step[data-step="1"]')) {
+        e.preventDefault();
+        nextStep(1);
+      }
+    }
+  });
+
+  // ===== FORM SUBMISSION =====
+  document.getElementById('loginForm').addEventListener('submit', function(e) {
+    if (isSubmitting) return;
+    
+    // Validate all fields
+    const allInputs = document.querySelectorAll('input[data-validate]');
     let allValid = true;
-    inputs.forEach(input => {
+    allInputs.forEach(input => {
       if (!validateField(input)) allValid = false;
     });
-    if (!allValid) return;
+    
+    if (!allValid) {
+      e.preventDefault();
+      // Go back to step 1 if email is invalid
+      const usernameInput = document.getElementById('id_username');
+      if (usernameInput && usernameInput.classList.contains('error') && currentStep === 2) {
+        goToStep(1);
+      }
+      return;
+    }
 
     isSubmitting = true;
     const submitBtn = document.getElementById('submitBtn');
@@ -792,19 +856,58 @@
     submitLoading.style.display = 'inline-flex';
     submitBtn.disabled = true;
 
+    // Submit the form
     this.submit();
   });
 
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && currentStep > 1) {
-      prevStep(currentStep);
-    }
+  // ===== REAL-TIME VALIDATION =====
+  document.querySelectorAll('input[data-validate]').forEach(input => {
+    input.addEventListener('blur', function() {
+      validateField(this);
+    });
+    
+    input.addEventListener('input', function() {
+      if (this.value.length > 0) {
+        validateField(this);
+      }
+    });
+
+    // Allow Enter key to submit or advance
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        const step = this.closest('.wizard-step');
+        if (step && step.dataset.step === '1') {
+          e.preventDefault();
+          nextStep(1);
+        }
+      }
+    });
   });
 
+  // ===== INIT =====
   setTimeout(() => {
     const firstInput = document.querySelector('.wizard-step.active input');
     if (firstInput) firstInput.focus();
   }, 400);
+
+  // ===== HANDLE FORM ERRORS FROM DJANGO =====
+  (function() {
+    // If there are form errors, show them and switch to step 2
+    const errorContainer = document.querySelector('.form-error');
+    if (errorContainer && errorContainer.textContent.trim()) {
+      // If we're on step 1, go to step 2
+      if (currentStep === 1) {
+        const step1 = document.querySelector('.wizard-step[data-step="1"]');
+        const step2 = document.querySelector('.wizard-step[data-step="2"]');
+        if (step1 && step2) {
+          step1.classList.remove('active');
+          step2.classList.add('active');
+          currentStep = 2;
+          updateProgress();
+        }
+      }
+    }
+  })();
 </script>
 {% endblock %}
 

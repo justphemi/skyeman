@@ -178,3 +178,94 @@ def payments_list(request):
         "selected_status": status_filter,
         "total_paid": total_paid,
     })
+
+
+# ---------------------------------------------------------------------------
+# Slot calendar (/manage/slots/) — operations team sets availability here
+# ---------------------------------------------------------------------------
+
+@staff_required
+def slots_list(request):
+    """Date-grouped list of all slots. Filter by drop zone, status, date range."""
+    zone_id = request.GET.get("zone", "")
+    status_filter = request.GET.get("status", "")
+    qs = TimeSlot.objects.select_related("drop_zone").order_by("date", "start_time")
+    if zone_id:
+        qs = qs.filter(drop_zone_id=zone_id)
+    if status_filter in ["open", "full", "cancelled"]:
+        qs = qs.filter(status=status_filter)
+
+    grouped = {}
+    for s in qs:
+        grouped.setdefault(s.date, []).append(s)
+
+    drop_zones = DropZone.objects.all()
+    counts = {
+        "open": TimeSlot.objects.filter(status="open").count(),
+        "full": TimeSlot.objects.filter(status="full").count(),
+        "cancelled": TimeSlot.objects.filter(status="cancelled").count(),
+        "all": TimeSlot.objects.count(),
+    }
+    return render(request, "manage_ui/slots.html", {
+        "grouped_slots": grouped,
+        "drop_zones": drop_zones,
+        "selected_zone": zone_id,
+        "selected_status": status_filter,
+        "counts": counts,
+        "today": date.today(),
+    })
+
+
+@staff_required
+def slot_create(request):
+    """Quick-create form for a new time slot."""
+    if request.method == "POST":
+        dz_id = request.POST.get("drop_zone")
+        date_str = request.POST.get("date")
+        time_str = request.POST.get("start_time")
+        capacity = request.POST.get("capacity") or 8
+        if not (dz_id and date_str and time_str):
+            messages.error(request, "Drop zone, date and start time are required.")
+        else:
+            try:
+                from datetime import datetime as _dt
+                slot_dt = _dt.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M")
+                slot, created = TimeSlot.objects.get_or_create(
+                    drop_zone_id=dz_id,
+                    date=slot_dt.date(),
+                    start_time=slot_dt.time(),
+                    defaults={"capacity": int(capacity), "status": "open"},
+                )
+                if created:
+                    messages.success(request, f"Slot created: {slot}.")
+                else:
+                    messages.info(request, f"That slot already exists: {slot}.")
+            except ValueError as e:
+                messages.error(request, f"Invalid date or time: {e}")
+        return redirect("manage_ui:slots")
+    return render(request, "manage_ui/slot_form.html", {"drop_zones": DropZone.objects.all()})
+
+
+@staff_required
+@require_POST
+def slot_action(request, pk):
+    """One-click status changes for a slot from the calendar list."""
+    slot = get_object_or_404(TimeSlot, pk=pk)
+    action = request.POST.get("action", "")
+    if action == "open":
+        slot.status = "open"
+        messages.success(request, f"Slot {slot} is now open.")
+    elif action == "full":
+        slot.status = "full"
+        messages.info(request, f"Slot {slot} marked as full.")
+    elif action == "cancel":
+        slot.status = "cancelled"
+        messages.warning(request, f"Slot {slot} cancelled (weather / ops).")
+    elif action == "delete":
+        slot.delete()
+        messages.success(request, "Slot removed.")
+        return redirect("manage_ui:slots")
+    else:
+        messages.error(request, "Unknown action.")
+    slot.save()
+    return redirect("manage_ui:slots")

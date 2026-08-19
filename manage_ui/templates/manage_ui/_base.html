@@ -225,15 +225,16 @@
 <div class="ops-shell">
   <aside class="ops-sidebar">
     <h3>Operations</h3>
-    <a href="{% url 'manage_ui:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
-    <a href="{% url 'manage_ui:bookings' %}" class="{% if 'booking' in request.resolver_match.url_name %}active{% endif %}"><i class="bi bi-ticket-perforated"></i> Bookings</a>
-    <a href="{% url 'manage_ui:payments' %}" class="{% if request.resolver_match.url_name == 'payments' %}active{% endif %}"><i class="bi bi-credit-card"></i> Payments</a>
-    <a href="{% url 'manage_ui:dropzones' %}" class="{% if request.resolver_match.url_name == 'dropzones' %}active{% endif %}"><i class="bi bi-geo-alt"></i> Drop Zones</a>
-    <a href="{% url 'manage_ui:users' %}" class="{% if request.resolver_match.url_name == 'users' %}active{% endif %}"><i class="bi bi-people"></i> Customers</a>
+    <a href="{% url 'manage_ui:dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">Dashboard</a>
+    <a href="{% url 'manage_ui:bookings' %}" class="{% if 'booking' in request.resolver_match.url_name %}active{% endif %}">Bookings</a>
+    <a href="{% url 'manage_ui:payments' %}" class="{% if request.resolver_match.url_name == 'payments' %}active{% endif %}">Payments</a>
+    <a href="{% url 'manage_ui:dropzones' %}" class="{% if request.resolver_match.url_name == 'dropzones' %}active{% endif %}">Drop Zones</a>
+    <a href="{% url 'manage_ui:slots' %}" class="{% if 'slot' in request.resolver_match.url_name %}active{% endif %}">Slots Calendar</a>
+    <a href="{% url 'manage_ui:users' %}" class="{% if request.resolver_match.url_name == 'users' %}active{% endif %}">Customers</a>
     <hr style="border-color:rgba(255,255,255,0.06);margin:1rem 0;">
     <h3>System</h3>
-    <a href="/admin/"><i class="bi bi-shield-lock"></i> Django Admin</a>
-    <a href="{% url 'dropzones:home' %}"><i class="bi bi-arrow-left"></i> Back to Site</a>
+    <a href="/admin/">Django Admin</a>
+    <a href="{% url 'dropzones:home' %}">Back to Site</a>
   </aside>
 
   <main class="ops-main">

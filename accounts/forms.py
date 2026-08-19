@@ -35,7 +35,7 @@ class EmailAuthenticationForm(AuthenticationForm):
 
 
 class SignUpForm(UserCreationForm):
-    """Sign-up form: email, optional full name, and password."""
+    """Sign-up form: email, optional full name, and password (single field, no confirm)."""
     full_name = forms.CharField(
         max_length=160,
         required=False,
@@ -46,10 +46,15 @@ class SignUpForm(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ("username", "full_name", "email", "password1", "password2")
+        # Single password field — we dropped password2 (the confirm field) per UX request.
+        fields = ("username", "full_name", "email", "password1")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # Drop the confirm-password field — single password field is the UX we want.
+        # UserCreationForm still declares password2 on `self.fields`; remove it before validation.
+        if "password2" in self.fields:
+            del self.fields["password2"]
         self.fields["username"].required = False
         self.fields["username"].widget = forms.HiddenInput()
         self.fields["username"].help_text = ""

@@ -4,6 +4,11 @@
 
 {% block extra_head %}
 <style>
+  /* ===== Lift navbar above the auth-page overlay (z-index:10) so it stays visible & sticky ===== */
+  body.template-auth .nav-bar,
+  .nav-bar { z-index: 2000 !important; background: rgba(11, 15, 23, 0.96); top: 0 !important; padding: 0 !important; }
+  .nav-bar .nav-inner-desktop, .nav-bar .nav-inner-mobile { padding: 0 !important; }
+
   /* ===== FULL SCREEN BACKGROUND CAROUSEL ===== */
   .auth-page {
     min-height: 100vh;
@@ -473,7 +478,7 @@
   <div class="slide" style="background-image: url('https://i.pinimg.com/736x/2b/0c/c0/2b0cc090855e93a1c86fa96df7eb84df.jpg');"></div>
   <div class="slide" style="background-image: url('https://i.pinimg.com/736x/ab/ef/40/abef4083daaaa8427d0244bccbe692b0.jpg');"></div>
   <div class="slide" style="background-image: url('https://i.pinimg.com/736x/4e/aa/f5/4eaaf59d2dbeb533133004bbc09f8c0c.jpg');"></div>
-  <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1529928520614-7c76e2d99740?w=1200&q=80');"></div>
+  <div class="slide" style="background-image: url('https://i.pinimg.com/474x/9e/79/a7/9e79a7f6cb94d8355cca9b1e62ae8bed.jpg');"></div>
 </div>
 
 <!-- ===== OVERLAY ===== -->
@@ -489,7 +494,7 @@
   <div class="wizard-container">
     <div class="wizard-card">
       <div class="wizard-graphic">
-        <div class="wizard-icon" style="font-size:3rem;color:var(--orange);margin-bottom:0.5rem;"><i class="bi bi-person-plus-fill"></i></div>
+        <div class="wizard-icon" style="font-size:3rem;color:var(--orange);margin-bottom:0.5rem;"></div>
         <h2>Start your adventure</h2>
         <p>Create your account and take the leap</p>
       </div>
@@ -514,14 +519,14 @@
                      autocomplete="email"
                      required
                      data-validate="email">
-              <i class="bi bi-envelope input-icon" id="emailIcon"></i>
+              
             </div>
             <!-- <div class="validation-feedback" id="emailFeedback">
               <span>We'll send your confirmation here</span>
             </div> -->
           </div>
           <div class="wizard-actions">
-            <button type="button" class="btn btn-orange" onclick="nextStep(1)">Continue <i class="bi bi-arrow-right"></i></button>
+            <button type="button" class="btn btn-orange" onclick="nextStep(1)">Continue </button>
           </div>
         </div>
 
@@ -537,7 +542,7 @@
                      minlength="8"
                      data-validate="password">
               <button type="button" class="password-toggle" onclick="togglePassword()" tabindex="-1">
-                <i class="bi bi-eye" id="passwordIcon"></i>
+                
               </button>
             </div>
             <div class="validation-feedback" id="passwordFeedback">
@@ -549,25 +554,10 @@
               <span class="bar" id="strength3"></span>
             </div>
             <div class="password-hints" id="passwordHints">
-              <span class="hint" data-check="length"><i class="bi bi-circle"></i> 8+ characters</span>
-              <span class="hint" data-check="uppercase"><i class="bi bi-circle"></i> Uppercase</span>
-              <span class="hint" data-check="lowercase"><i class="bi bi-circle"></i> Lowercase</span>
-              <span class="hint" data-check="number"><i class="bi bi-circle"></i> Number</span>
-            </div>
-          </div>
-
-          <div class="form-group-wizard">
-            <label class="form-label" for="id_password2">Confirm password</label>
-            <div class="input-wrap">
-              <input type="password" id="id_password2" name="password2" 
-                     placeholder="Confirm your password"
-                     autocomplete="new-password"
-                     required
-                     data-validate="confirm">
-              <i class="bi bi-check-circle input-icon" id="confirmIcon"></i>
-            </div>
-            <div class="validation-feedback" id="confirmFeedback">
-              <span>Re-enter your password</span>
+              <span class="hint" data-check="length"> 8+ characters</span>
+              <span class="hint" data-check="uppercase"> Uppercase</span>
+              <span class="hint" data-check="lowercase"> Lowercase</span>
+              <span class="hint" data-check="number"> Number</span>
             </div>
           </div>
 
@@ -578,10 +568,10 @@
 
           <div class="wizard-actions">
             <button type="button" class="btn btn-ghost btn-back" onclick="prevStep(2)">
-              <i class="bi bi-arrow-left"></i> Back
+               Back
             </button>
             <button type="submit" class="btn btn-orange" id="submitBtn">
-              <span id="submitText">Create account <i class="bi bi-rocket-takeoff"></i></span>
+              <span id="submitText">Create account </span>
               <span id="submitLoading" style="display:none;">
                 <span class="spinner"></span> Creating account...
               </span>
@@ -615,7 +605,6 @@
   <span class="indicator" data-index="3"></span>
   <span class="indicator" data-index="4"></span>
 </div>
-
 <script>
   // ===== BACKGROUND CAROUSEL =====
   (function() {
@@ -682,8 +671,10 @@
     startCarousel();
 
     const bgContainer = document.querySelector('.auth-bg-carousel');
-    bgContainer.addEventListener('mouseenter', () => clearInterval(interval));
-    bgContainer.addEventListener('mouseleave', startCarousel);
+    if (bgContainer) {
+      bgContainer.addEventListener('mouseenter', () => clearInterval(interval));
+      bgContainer.addEventListener('mouseleave', startCarousel);
+    }
   })();
 
   // ===== WIZARD STATE (2 steps only) =====
@@ -691,7 +682,7 @@
   const totalSteps = 2;
   let isSubmitting = false;
 
-  // ===== VALIDATION RULES (username removed) =====
+  // ===== VALIDATION RULES =====
   const validators = {
     email: function(value) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -705,12 +696,6 @@
       if (!allValid) return { valid: false, message: 'Check the requirements below', checks };
       return { valid: true, message: 'Strong password!', checks };
     },
-    confirm: function(value) {
-      const password = document.getElementById('id_password1')?.value || '';
-      if (value !== password) return { valid: false, message: 'Passwords do not match' };
-      if (value.length < 8) return { valid: false, message: 'Minimum 8 characters' };
-      return { valid: true, message: 'Passwords match' };
-    }
   };
 
   function getPasswordChecks(value) {
@@ -722,9 +707,123 @@
     };
   }
 
+  // ===== VALIDATE FIELD FUNCTION =====
+  function validateField(input) {
+    const validateType = input.dataset.validate;
+    const value = input.value;
+    const feedback = input.closest('.form-group-wizard')?.querySelector('.validation-feedback');
+    
+    if (!validateType || !validators[validateType]) {
+      return true;
+    }
+
+    const result = validators[validateType](value);
+    
+    // Clear previous states
+    input.classList.remove('error', 'success');
+    if (feedback) {
+      feedback.classList.remove('error', 'success');
+    }
+
+    if (!result.valid) {
+      input.classList.add('error');
+      if (feedback) {
+        feedback.classList.add('error');
+        feedback.innerHTML = `<span>${result.message}</span>`;
+      }
+      return false;
+    } else {
+      input.classList.add('success');
+      if (feedback) {
+        feedback.classList.add('success');
+        feedback.innerHTML = `<span>${result.message}</span>`;
+      }
+      
+      // Update password hints if password field
+      if (validateType === 'password' && result.checks) {
+        updatePasswordHints(result.checks);
+        updatePasswordStrength(value);
+      }
+      
+      return true;
+    }
+  }
+
+  // ===== UPDATE PASSWORD HINTS =====
+  function updatePasswordHints(checks) {
+    const hints = document.querySelectorAll('.password-hints .hint');
+    hints.forEach(hint => {
+      const check = hint.dataset.check;
+      hint.classList.remove('valid', 'invalid');
+      if (checks[check]) {
+        hint.classList.add('valid');
+        hint.innerHTML = `✓ ${hint.textContent.trim()}`;
+      } else {
+        hint.classList.add('invalid');
+        hint.innerHTML = `○ ${hint.textContent.trim()}`;
+      }
+    });
+  }
+
+  // ===== UPDATE PASSWORD STRENGTH =====
+  function updatePasswordStrength(value) {
+    const bars = document.querySelectorAll('.password-strength .bar');
+    bars.forEach(bar => bar.className = 'bar');
+    
+    if (value.length === 0) return;
+    
+    const checks = getPasswordChecks(value);
+    const count = Object.values(checks).filter(v => v).length;
+    
+    if (count <= 2) {
+      bars.forEach(bar => bar.classList.add('weak'));
+    } else if (count === 3) {
+      bars.forEach(bar => bar.classList.add('medium'));
+    } else if (count === 4) {
+      bars.forEach(bar => bar.classList.add('strong'));
+    }
+  }
+
+  // ===== PASSWORD TOGGLE =====
+  function togglePassword() {
+    const passwordInput = document.getElementById('id_password1');
+    if (passwordInput) {
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+      
+      const toggleBtn = document.querySelector('.password-toggle');
+      if (toggleBtn) {
+        toggleBtn.textContent = type === 'password' ? '👁️' : '👁️‍🗨️';
+      }
+    }
+  }
+
+  // ===== UPDATE PROGRESS =====
+  function updateProgress() {
+    const dots = document.querySelectorAll('.wizard-progress .dot');
+    const lines = document.querySelectorAll('.wizard-progress .dot-line');
+    
+    dots.forEach((dot, index) => {
+      const step = index + 1;
+      dot.classList.remove('active', 'done');
+      if (step === currentStep) {
+        dot.classList.add('active');
+      } else if (step < currentStep) {
+        dot.classList.add('done');
+      }
+    });
+    
+    lines.forEach((line, index) => {
+      const step = index + 1;
+      line.classList.toggle('done', step < currentStep);
+    });
+  }
+
   // ===== STEP MANAGEMENT =====
   function nextStep(fromStep) {
     const stepEl = document.querySelector(`.wizard-step[data-step="${fromStep}"]`);
+    if (!stepEl) return;
+    
     const inputs = stepEl.querySelectorAll('input[data-validate]');
     let allValid = true;
 
@@ -751,160 +850,10 @@
   function prevStep(fromStep) {
     const stepEl = document.querySelector(`.wizard-step[data-step="${fromStep}"]`);
     const prevStepEl = document.querySelector(`.wizard-step[data-step="${fromStep - 1}"]`);
-    if (!prevStepEl) return;
-
-    stepEl.classList.add('exit');
-    setTimeout(() => {
-      stepEl.classList.remove('active', 'exit');
-      prevStepEl.classList.add('active');
-      currentStep = fromStep - 1;
-      updateProgress();
-    }, 300);
-  }
-
-  function updateProgress() {
-    const dots = document.querySelectorAll('.wizard-progress .dot');
-    const lines = document.querySelectorAll('.wizard-progress .dot-line');
     
-    dots.forEach((dot, index) => {
-      const step = index + 1;
-      dot.classList.remove('active', 'done');
-      if (step === currentStep) dot.classList.add('active');
-      else if (step < currentStep) dot.classList.add('done');
-    });
-    
-    lines.forEach((line, index) => {
-      const step = index + 1;
-      line.classList.toggle('done', step < currentStep);
-    });
-  }
+    if (!stepEl || !prevStepEl) return;
 
-  // ===== FIELD VALIDATION =====
-  function validateField(input) {
-    const validator = validators[input.dataset.validate];
-    if (!validator) return true;
-
-    const value = input.value.trim();
-    const result = validator(value);
-    const feedback = document.getElementById(input.id + 'Feedback');
-    const icon = document.getElementById(input.id + 'Icon') || 
-                 input.closest('.input-wrap')?.querySelector('.input-icon');
-
-    input.classList.remove('error', 'success');
-    if (icon) icon.className = 'bi input-icon';
-
-    if (value === '') {
-      if (feedback) feedback.innerHTML = `<span>This field is required</span>`;
-      feedback?.classList.remove('success', 'error');
-      return false;
-    }
-
-    if (result.valid) {
-      input.classList.add('success');
-      if (icon) icon.className = 'bi bi-check-circle input-icon success';
-      if (feedback) {
-        feedback.innerHTML = `<i class="bi bi-check-circle"></i> ${result.message}`;
-        feedback.classList.add('success');
-        feedback.classList.remove('error');
-      }
-      if (input.id === 'id_password1' && result.checks) {
-        updatePasswordHints(result.checks);
-        updatePasswordStrength(result.checks);
-      }
-      return true;
-    } else {
-      input.classList.add('error');
-      if (icon) icon.className = 'bi bi-x-circle input-icon error';
-      if (feedback) {
-        feedback.innerHTML = `<i class="bi bi-x-circle"></i> ${result.message}`;
-        feedback.classList.add('error');
-        feedback.classList.remove('success');
-      }
-      if (input.id === 'id_password1' && result.checks) {
-        updatePasswordHints(result.checks);
-        updatePasswordStrength(result.checks);
-      }
-      return false;
-    }
-  }
-
-  function updatePasswordHints(checks) {
-    const hints = document.querySelectorAll('.password-hints .hint');
-    hints.forEach(hint => {
-      const check = hint.dataset.check;
-      const isValid = checks[check];
-      hint.classList.remove('valid', 'invalid');
-      const icon = hint.querySelector('.bi');
-      if (isValid) {
-        hint.classList.add('valid');
-        icon.className = 'bi bi-check-circle-fill';
-      } else {
-        hint.classList.add('invalid');
-        icon.className = 'bi bi-circle';
-      }
-    });
-  }
-
-  function updatePasswordStrength(checks) {
-    const validCount = Object.values(checks).filter(v => v).length;
-    const bars = [
-      document.getElementById('strength1'),
-      document.getElementById('strength2'),
-      document.getElementById('strength3')
-    ];
-    
-    bars.forEach((bar, index) => {
-      bar.className = 'bar';
-      if (index < Math.min(validCount, 3)) {
-        if (validCount <= 2) bar.classList.add('weak');
-        else if (validCount === 3) bar.classList.add('medium');
-        else if (validCount === 4) bar.classList.add('strong');
-      }
-    });
-  }
-
-  // ===== EVENT LISTENERS =====
-  document.querySelectorAll('input[data-validate]').forEach(input => {
-    input.addEventListener('input', function() {
-      validateField(this);
-    });
-    
-    input.addEventListener('blur', function() {
-      if (this.value.trim()) validateField(this);
-    });
-
-    const step = input.closest('.wizard-step');
-    if (step) {
-      const stepNum = parseInt(step.dataset.step);
-      input.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          if (stepNum < totalSteps) {
-            nextStep(stepNum);
-          }
-        }
-      });
-    }
-  });
-
-  function togglePassword() {
-    const input = document.getElementById('id_password1');
-    const icon = document.getElementById('passwordIcon');
-    if (input.type === 'password') {
-      input.type = 'text';
-      icon.className = 'bi bi-eye-slash';
-    } else {
-      input.type = 'password';
-      icon.className = 'bi bi-eye';
-    }
-  }
-
-  // ===== FORM SUBMISSION =====
-  document.getElementById('signupForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    if (isSubmitting) return;
-
-    const stepEl = document.querySelector(`.wizard-step[data-step="${currentStep}"]`);
+    // Validate current step before going back
     const inputs = stepEl.querySelectorAll('input[data-validate]');
     let allValid = true;
     inputs.forEach(input => {
@@ -920,6 +869,38 @@
 
     if (!allValid) return;
 
+    stepEl.classList.add('exit');
+    setTimeout(() => {
+      stepEl.classList.remove('active', 'exit');
+      prevStepEl.classList.add('active');
+      currentStep = fromStep - 1;
+      updateProgress();
+    }, 300);
+  }
+
+  // ===== FORM SUBMISSION =====
+  document.getElementById('signupForm').addEventListener('submit', function(e) {
+    if (isSubmitting) return;
+    
+    // Validate all fields in step 2
+    const step2Inputs = document.querySelector('.wizard-step[data-step="2"]').querySelectorAll('input[data-validate]');
+    let allValid = true;
+    step2Inputs.forEach(input => {
+      if (!validateField(input)) allValid = false;
+    });
+    
+    const terms = document.getElementById('id_terms');
+    if (terms && !terms.checked) {
+      allValid = false;
+      terms.style.border = '2px solid var(--red)';
+      setTimeout(() => terms.style.border = '', 2000);
+    }
+
+    if (!allValid) {
+      e.preventDefault();
+      return;
+    }
+
     isSubmitting = true;
     const submitBtn = document.getElementById('submitBtn');
     const submitText = document.getElementById('submitText');
@@ -929,9 +910,36 @@
     submitText.style.display = 'none';
     submitLoading.style.display = 'inline-flex';
     submitBtn.disabled = true;
-
+    
+    // Allow form submission
     this.submit();
   });
+
+  // ===== REAL-TIME VALIDATION =====
+  document.querySelectorAll('input[data-validate]').forEach(input => {
+    input.addEventListener('blur', function() {
+      validateField(this);
+    });
+    
+    input.addEventListener('input', function() {
+      if (this.value.length > 0) {
+        validateField(this);
+      }
+    });
+  });
+
+  // ===== PASSWORD REAL-TIME UPDATES =====
+  const passwordInput = document.getElementById('id_password1');
+  if (passwordInput) {
+    passwordInput.addEventListener('input', function() {
+      const value = this.value;
+      if (value.length > 0) {
+        const checks = getPasswordChecks(value);
+        updatePasswordHints(checks);
+        updatePasswordStrength(value);
+      }
+    });
+  }
 
   // ===== INIT =====
   setTimeout(() => {

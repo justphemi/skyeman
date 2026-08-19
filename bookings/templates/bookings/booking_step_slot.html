@@ -1,0 +1,232 @@
+{% extends "skyeman_project/base.html" %}
+{% load humanize %}
+{% block title %}Pick a time slot — Skyeman{% endblock %}
+{% block marketing_footer %}{% endblock %}
+
+{% block extra_head %}
+<style>
+  .wizard-wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 1rem 0 3rem;
+  }
+  .step-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .step-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #98a0b3;
+  }
+  .step-pill.is-done {
+    background: rgba(34, 197, 94, 0.08);
+    border-color: rgba(34, 197, 94, 0.3);
+    color: #4ade80;
+  }
+  .step-pill.is-active {
+    background: rgba(255, 106, 26, 0.12);
+    border-color: rgba(255, 106, 26, 0.4);
+    color: #ff8a3d;
+  }
+  .step-bar .arrow {
+    color: #4b5563;
+    font-weight: 700;
+  }
+
+  .breadcrumb {
+    color: #98a0b3;
+    font-size: 0.88rem;
+    margin-bottom: 1rem;
+  }
+  .breadcrumb a {
+    color: #ff8a3d;
+    text-decoration: none;
+  }
+
+  .eyebrow {
+    color: #ff6a1a;
+    font-weight: 700;
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+  .page-title {
+    font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 0.4rem;
+  }
+  .page-sub {
+    color: #98a0b3;
+    font-size: 1rem;
+    margin-bottom: 1.6rem;
+  }
+
+  .date-block {
+    margin-bottom: 1.6rem;
+  }
+  .date-block .date-label {
+    font-size: 0.85rem;
+    color: #ff8a3d;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+
+  .slot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.7rem;
+  }
+  .slot-btn {
+    background: #141a26;
+    border: 2px solid #232d3f;
+    border-radius: 12px;
+    padding: 0.85rem 0.5rem;
+    cursor: pointer;
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    text-align: center;
+    display: block;
+  }
+  .slot-btn:hover {
+    border-color: #ff6a1a;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(255, 106, 26, 0.12);
+  }
+  .slot-btn.is-selected,
+  .slot-btn:has(input:checked) {
+    border-color: #ff6a1a;
+    background: rgba(255, 106, 26, 0.08);
+    box-shadow: 0 0 0 2px rgba(255, 106, 26, 0.25);
+  }
+  .slot-btn:has(input:checked)::after {
+    content: '✓';
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #ff6a1a;
+    color: #fff;
+    font-weight: 800;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 3px rgba(255, 106, 26, 0.18);
+  }
+  .slot-btn input {
+    display: none;
+  }
+  .slot-btn .time {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #fff;
+  }
+  .slot-btn .seats {
+    font-size: 0.78rem;
+    color: #4ade80;
+    margin-top: 4px;
+  }
+  .slot-btn .seats.tight {
+    color: #fbbf24;
+  }
+
+  .empty-state {
+    background: #141a26;
+    border: 1px dashed #232d3f;
+    border-radius: 12px;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    color: #98a0b3;
+  }
+  .empty-state strong {
+    color: #fff;
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  .actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    gap: 1rem;
+  }
+  .actions .left {
+    color: #98a0b3;
+    font-size: 0.88rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wizard-wrap">
+  <div class="step-bar">
+    <span class="step-pill is-done">Step 1 &middot; {{ dropzone.name }}</span>
+    <span class="arrow">&rarr;</span>
+    <span class="step-pill is-done">Step 2 &middot; {{ package.name }}</span>
+    <span class="arrow">&rarr;</span>
+    <span class="step-pill is-active">Step 3 of {{ total_steps }} &middot; Time slot</span>
+    <span class="arrow">&rarr;</span>
+    <span class="step-pill">Details</span>
+  </div>
+
+  <div class="breadcrumb">
+    {{ dropzone.name }} &middot; <a href="{% url 'bookings:step_package' %}?dropzone={{ dropzone.id }}">{{ package.name }}</a>
+  </div>
+
+  <div class="eyebrow">When works for you?</div>
+  <h1 class="page-title">Pick an open time slot</h1>
+  <p class="page-sub">Slots are added by our operations team. Only future slots with seats remaining are shown.</p>
+
+  {% if grouped_slots %}
+    <form method="post">
+      {% csrf_token %}
+      {% for date, slots in grouped_slots.items %}
+        <div class="date-block">
+          <div class="date-label">{{ date|date:"l, F j, Y" }}</div>
+          <div class="slot-grid">
+            {% for s in slots %}
+              <label class="slot-btn {% if selected_id == s.id %}is-selected{% endif %}" for="slot-{{ s.id }}">
+                <input type="radio" name="slot" id="slot-{{ s.id }}" value="{{ s.id }}" {% if selected_id == s.id %}checked{% endif %} required>
+                <div class="time">{{ s.start_time|time:"H:i" }}</div>
+                <div class="seats {% if s.seats_left <= 2 %}tight{% endif %}">{{ s.seats_left }} seat{{ s.seats_left|pluralize }} left</div>
+              </label>
+            {% endfor %}
+          </div>
+        </div>
+      {% endfor %}
+
+      <div class="actions">
+        <a class="btn btn-ghost" href="{% url 'bookings:step_package' %}?dropzone={{ dropzone.id }}" style="padding:10px 22px;">&larr; Back</a>
+        <button type="submit" class="btn btn-orange" style="padding:12px 28px;font-weight:700;">
+          Continue to your details
+        </button>
+      </div>
+    </form>
+  {% else %}
+    <div class="empty-state">
+      <strong>No open slots at {{ dropzone.name }} yet.</strong>
+      Try a different drop zone, or check back soon &mdash; we add new slots every week.
+    </div>
+    <div class="actions">
+      <a class="btn btn-ghost" href="{% url 'bookings:step_dropzone' %}" style="padding:10px 22px;">&larr; Change drop zone</a>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "manage_ui/_base.html" %}
+{% block ops_content %}
+
+<div class="ops-header">
+  <div>
+    <div class="crumbs">
+      <a href="{% url 'manage_ui:dashboard' %}">Console</a> /
+      <a href="{% url 'manage_ui:slots' %}">Slots Calendar</a> / New
+    </div>
+    <h1>Add a time slot</h1>
+  </div>
+</div>
+
+<div class="ops-panel" style="max-width:560px;">
+  <p style="color:var(--muted);font-size:0.85rem;margin-bottom:1rem;">
+    Set when jumpers can book. Pick a drop zone, date, start time, and capacity.
+    Status defaults to <strong style="color:#4ade80;">Open</strong>.
+  </p>
+
+  <form method="post">
+    {% csrf_token %}
+    <div style="display:grid;gap:1rem;">
+      <div>
+        <label style="display:block;font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.4rem;">Drop zone</label>
+        <select name="drop_zone" required class="form-control" style="background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:0.92rem;">
+          <option value="">Pick a drop zone</option>
+          {% for dz in drop_zones %}
+            <option value="{{ dz.id }}">{{ dz.name }} &middot; {{ dz.city }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.85rem;">
+        <div>
+          <label style="display:block;font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.4rem;">Date</label>
+          <input type="date" name="date" required class="form-control" style="background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:0.92rem;">
+        </div>
+        <div>
+          <label style="display:block;font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.4rem;">Start time</label>
+          <input type="time" name="start_time" required class="form-control" style="background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:0.92rem;">
+        </div>
+      </div>
+
+      <div>
+        <label style="display:block;font-size:0.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.4rem;">Capacity (seats)</label>
+        <input type="number" name="capacity" value="8" min="1" max="50" required class="form-control" style="background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:0.92rem;">
+        <small style="color:var(--muted);font-size:0.78rem;">Typical: 6-12 jumpers per slot.</small>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:0.75rem;margin-top:1.5rem;">
+      <button type="submit" class="btn btn-orange" style="padding:10px 22px;font-weight:700;">Create slot</button>
+      <a class="btn btn-ghost" href="{% url 'manage_ui:slots' %}" style="padding:10px 22px;">Cancel</a>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

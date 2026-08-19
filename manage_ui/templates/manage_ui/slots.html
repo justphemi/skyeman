@@ -1,0 +1,116 @@
+{% extends "manage_ui/_base.html" %}
+{% block ops_content %}
+
+<div class="ops-header">
+  <div>
+    <div class="crumbs"><a href="{% url 'manage_ui:dashboard' %}">Console</a> / Slots Calendar</div>
+    <h1>Slots Calendar</h1>
+  </div>
+  <div>
+    <a class="btn btn-orange" href="{% url 'manage_ui:slot_create' %}" style="padding:9px 18px;font-weight:700;">+ New Slot</a>
+  </div>
+</div>
+
+<div class="ops-panel">
+  <div class="ops-filter">
+    <a href="{% url 'manage_ui:slots' %}" class="pill-tab {% if not selected_status and not selected_zone %}active{% endif %}">All ({{ counts.all }})</a>
+    <a href="?status=open" class="pill-tab {% if selected_status == 'open' %}active{% endif %}">Open ({{ counts.open }})</a>
+    <a href="?status=full" class="pill-tab {% if selected_status == 'full' %}active{% endif %}">Full ({{ counts.full }})</a>
+    <a href="?status=cancelled" class="pill-tab {% if selected_status == 'cancelled' %}active{% endif %}">Cancelled ({{ counts.cancelled }})</a>
+
+    <span style="color:var(--muted);font-size:0.78rem;margin-left:auto;">Filter by zone:</span>
+    <form method="get" style="display:inline-flex;gap:6px;align-items:center;">
+      {% if selected_status %}<input type="hidden" name="status" value="{{ selected_status }}">{% endif %}
+      <select name="zone" onchange="this.form.submit()" class="form-control" style="background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:5px 10px;font-size:0.82rem;">
+        <option value="">All zones</option>
+        {% for dz in drop_zones %}
+          <option value="{{ dz.id }}" {% if selected_zone == dz.id|stringformat:"s" %}selected{% endif %}>{{ dz.name }}</option>
+        {% endfor %}
+      </select>
+    </form>
+  </div>
+
+  {% if grouped_slots %}
+    {% for date, slots in grouped_slots.items %}
+      <div style="margin-bottom:1.4rem;">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.5rem;">
+          <h3 style="font-size:0.92rem;font-weight:700;color:var(--text);margin:0;">{{ date|date:"l, F j, Y" }}</h3>
+          <small style="color:var(--muted);font-size:0.78rem;">
+            {% if date < today %}past{% elif date == today %}today{% else %}upcoming{% endif %}
+            &middot; {{ slots|length }} slot{{ slots|length|pluralize }}
+          </small>
+        </div>
+        <table class="ops-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Drop zone</th>
+              <th>Capacity</th>
+              <th>Booked</th>
+              <th>Seats left</th>
+              <th>Status</th>
+              <th style="text-align:right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in slots %}
+              <tr>
+                <td><strong>{{ s.start_time|time:"H:i" }}</strong></td>
+                <td>{{ s.drop_zone.name }}</td>
+                <td>{{ s.capacity }}</td>
+                <td>{{ s.booked_count }}</td>
+                <td>
+                  {% with left=s.seats_left %}
+                    <strong style="color:{% if left == 0 %}#f87171{% elif left <= 2 %}#fbbf24{% else %}#4ade80{% endif %};">{{ left }}</strong>
+                  {% endwith %}
+                </td>
+                <td>
+                  {% if s.status == 'open' %}<span class="status-pill confirmed">Open</span>
+                  {% elif s.status == 'full' %}<span class="status-pill pending">Full</span>
+                  {% else %}<span class="status-pill cancelled">Cancelled</span>{% endif %}
+                </td>
+                <td style="text-align:right;white-space:nowrap;">
+                  {% if s.status != 'open' %}
+                    <form method="post" action="{% url 'manage_ui:slot_action' s.pk %}" style="display:inline;">
+                      {% csrf_token %}
+                      <input type="hidden" name="action" value="open">
+                      <button type="submit" class="btn btn-ghost btn-sm" style="padding:3px 9px;font-size:0.72rem;">Open</button>
+                    </form>
+                  {% endif %}
+                  {% if s.status != 'full' %}
+                    <form method="post" action="{% url 'manage_ui:slot_action' s.pk %}" style="display:inline;">
+                      {% csrf_token %}
+                      <input type="hidden" name="action" value="full">
+                      <button type="submit" class="btn btn-ghost btn-sm" style="padding:3px 9px;font-size:0.72rem;">Mark full</button>
+                    </form>
+                  {% endif %}
+                  {% if s.status != 'cancelled' %}
+                    <form method="post" action="{% url 'manage_ui:slot_action' s.pk %}" style="display:inline;">
+                      {% csrf_token %}
+                      <input type="hidden" name="action" value="cancel">
+                      <button type="submit" class="btn btn-ghost btn-sm" style="padding:3px 9px;font-size:0.72rem;color:#f87171;">Cancel</button>
+                    </form>
+                  {% endif %}
+                  {% if s.booked_count == 0 %}
+                    <form method="post" action="{% url 'manage_ui:slot_action' s.pk %}" style="display:inline;" onsubmit="return confirm('Remove this slot permanently?');">
+                      {% csrf_token %}
+                      <input type="hidden" name="action" value="delete">
+                      <button type="submit" class="btn btn-ghost btn-sm" style="padding:3px 9px;font-size:0.72rem;color:#f87171;">Delete</button>
+                    </form>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="ops-empty">
+      No slots match this filter. Try a different drop zone or status,
+      or <a href="{% url 'manage_ui:slot_create' %}" style="color:var(--orange);">add a new slot</a>.
+    </div>
+  {% endif %}
+</div>
+
+{% endblock %}

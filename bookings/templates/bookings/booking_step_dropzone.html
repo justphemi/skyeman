@@ -1,0 +1,204 @@
+{% extends "skyeman_project/base.html" %}
+{% load humanize %}
+{% block title %}Pick a drop zone — Skyeman{% endblock %}
+{% block marketing_footer %}{% endblock %}
+
+{% block extra_head %}
+<style>
+  .wizard-wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 1rem 0 3rem;
+  }
+  .step-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .step-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #98a0b3;
+  }
+  .step-pill.is-active {
+    background: rgba(255, 106, 26, 0.12);
+    border-color: rgba(255, 106, 26, 0.4);
+    color: #ff8a3d;
+  }
+  .step-pill.is-done {
+    background: rgba(34, 197, 94, 0.08);
+    border-color: rgba(34, 197, 94, 0.3);
+    color: #4ade80;
+  }
+  .step-bar .arrow {
+    color: #4b5563;
+    font-weight: 700;
+  }
+
+  .zone-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .zone-card {
+    background: #141a26;
+    border: 2px solid #232d3f;
+    border-radius: 16px;
+    padding: 1.25rem;
+    cursor: pointer;
+    transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+    position: relative;
+  }
+  .zone-card:hover {
+    border-color: #ff6a1a;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(255, 106, 26, 0.15);
+  }
+  .zone-card.is-selected,
+  .zone-card:has(input[type="radio"]:checked) {
+    border-color: #ff6a1a;
+    background: rgba(255, 106, 26, 0.05);
+    box-shadow: 0 0 0 2px rgba(255, 106, 26, 0.25);
+  }
+  .zone-card input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .zone-card:has(input[type="radio"]:checked)::after {
+    content: '✓';
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #ff6a1a;
+    color: #fff;
+    font-weight: 800;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 4px rgba(255, 106, 26, 0.18);
+  }
+  .zone-card .zone-name {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 0.25rem;
+  }
+  .zone-card .zone-city {
+    font-size: 0.85rem;
+    color: #98a0b3;
+    margin-bottom: 0.75rem;
+  }
+  .zone-card .zone-desc {
+    font-size: 0.88rem;
+    color: #cbd1dc;
+    line-height: 1.55;
+    margin-bottom: 0.85rem;
+  }
+  .zone-card .zone-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: #98a0b3;
+    border-top: 1px solid #232d3f;
+    padding-top: 0.75rem;
+  }
+  .zone-card .zone-meta strong {
+    color: #ff8a3d;
+    font-weight: 700;
+  }
+
+  .actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    gap: 1rem;
+  }
+  .actions .left {
+    color: #98a0b3;
+    font-size: 0.88rem;
+  }
+
+  .eyebrow {
+    color: #ff6a1a;
+    font-weight: 700;
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+  .page-title {
+    font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 0.4rem;
+  }
+  .page-sub {
+    color: #98a0b3;
+    font-size: 1rem;
+    margin-bottom: 1.6rem;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wizard-wrap">
+  <div class="step-bar">
+    <span class="step-pill is-active">Step 1 of {{ total_steps }} &middot; Drop zone</span>
+    <span class="arrow">&rarr;</span>
+    <span class="step-pill">Package</span>
+    <span class="arrow">&rarr;</span>
+    <span class="step-pill">Time slot</span>
+    <span class="arrow">&rarr;</span>
+    <span class="step-pill">Details</span>
+  </div>
+
+  <div class="eyebrow">Where will you jump?</div>
+  <h1 class="page-title">Pick a drop zone</h1>
+  <p class="page-sub">All three airfields are FAA-equivalent certified, weather-monitored, and run by Femi — our head instructor.</p>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="zone-grid">
+      {% for zone in drop_zones %}
+        <label class="zone-card {% if selected_id == zone.id %}is-selected{% endif %}" for="dz-{{ zone.id }}">
+          <input type="radio" name="dropzone" id="dz-{{ zone.id }}" value="{{ zone.id }}" {% if selected_id == zone.id %}checked{% endif %} required>
+          <div class="zone-name">{{ zone.name }}</div>
+          <div class="zone-city">{{ zone.city }}</div>
+          <div class="zone-desc">{{ zone.description|truncatewords:32 }}</div>
+          <div class="zone-meta">
+            <span><strong>{{ zone.time_slots.count }}</strong> upcoming slots</span>
+            <span>{{ zone.address|truncatewords:6 }}</span>
+          </div>
+        </label>
+      {% empty %}
+        <div class="zone-card" style="cursor:default;">
+          <div class="zone-name">No drop zones yet</div>
+          <div class="zone-desc">The admin hasn't set up any drop zones. Please check back soon.</div>
+        </div>
+      {% endfor %}
+    </div>
+
+    <div class="actions">
+      <span class="left">Pick one to continue &rarr;</span>
+      <button type="submit" class="btn btn-orange" style="padding:12px 28px;font-weight:700;">
+        Continue to packages
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,18 +1,25 @@
-"""Seed the database with drop zones and jump packages only.
+"""Seed the database with drop zones, jump packages, an admin user, and demo slots.
 
-Time slots, users, instructors, bookings, and payments are NOT seeded —
-the admin sets those up via /admin/ and /manage/.
+Customer users, bookings, and payments are NOT seeded — customers sign up
+at /accounts/signup/ and admins create bookings via /admin/ or /manage/.
 
 Usage:
     python manage.py seed
     python manage.py seed --reset
 """
+from datetime import date, time, timedelta
 from decimal import Decimal
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
 
-from dropzones.models import DropZone, JumpPackage
+from django.contrib.auth.models import User
+
+from dropzones.models import DropZone, JumpPackage, TimeSlot
+
+
+ADMIN_EMAIL = "admin@skyeman.com"
+ADMIN_PASSWORD = "Skyeman123!"
 
 
 class Command(BaseCommand):
@@ -29,6 +36,15 @@ class Command(BaseCommand):
     def handle(self, *args, **opts):
         if opts["reset"]:
             self.stdout.write(self.style.WARNING("Resetting drop zones and packages…"))
+            # Clean dependent records first (Bookings PROTECT both DropZone and TimeSlot,
+            # and TimeSlots PROTECT DropZone). The seed is a clean slate — wipe everything
+            # except users.
+            from bookings.models import Booking, Payment, BookingParticipant
+            from dropzones.models import TimeSlot
+            BookingParticipant.objects.all().delete()
+            Payment.objects.all().delete()
+            Booking.objects.all().delete()
+            TimeSlot.objects.all().delete()
             DropZone.objects.all().delete()
             JumpPackage.objects.all().delete()
 
@@ -91,10 +107,64 @@ class Command(BaseCommand):
             packages.append(pkg)
         self.stdout.write(self.style.SUCCESS(f"✓ {len(packages)} Jump Packages configured"))
 
+        # Admin user (idempotent: refresh password + flags every run so credentials are always usable).
+        admin, created = User.objects.get_or_create(
+            username="admin",
+            defaults={
+                "email": ADMIN_EMAIL,
+                "is_staff": True,
+                "is_superuser": True,
+                "first_name": "Skyeman",
+                "last_name": "Admin",
+            },
+        )
+        admin.email = ADMIN_EMAIL
+        admin.is_staff = True
+        admin.is_superuser = True
+        admin.set_password(ADMIN_PASSWORD)
+        admin.save()
+        verb = "Created" if created else "Updated"
+        self.stdout.write(self.style.SUCCESS(
+            f"✓ Admin user {verb}: email={ADMIN_EMAIL} password={ADMIN_PASSWORD}"
+        ))
+
+        # Demo time slots: 4 future slots spread across drop zones / dates.
+        # Slot #2 has capacity=1 — when one user books it, it must auto-flip to full
+        # (TimeSlot.update_status runs after every booking) so no other user can grab it.
+        today = date.today()
+        demo_slots = [
+            # (drop_zone_name, offset_days, start_hour, start_minute, capacity)
+            ("Ikoyi Airfield",            1, 9, 0, 8),
+            ("Lekki Coastal",              2, 10, 0, 1),   # capacity 1 — single-seat demo
+            ("Victoria Island Skyport",   3, 11, 0, 8),
+            ("Ikoyi Airfield",             5, 14, 0, 6),
+        ]
+        slot_count = 0
+        for dz_name, offset, hh, mm, cap in demo_slots:
+            try:
+                dz = DropZone.objects.get(name=dz_name)
+            except DropZone.DoesNotExist:
+                continue
+            slot_date = today + timedelta(days=offset)
+            slot_time = time(hh, mm)
+            slot, s_created = TimeSlot.objects.get_or_create(
+                drop_zone=dz,
+                date=slot_date,
+                start_time=slot_time,
+                defaults={"capacity": cap, "status": "open"},
+            )
+            # Refresh capacity on every seed run so the demo is always in the expected state.
+            slot.capacity = cap
+            if slot.status == "cancelled":
+                slot.status = "open"
+            slot.save()
+            slot_count += 1
+        self.stdout.write(self.style.SUCCESS(f"✓ {slot_count} Demo Time Slots loaded"))
+
         self.stdout.write(self.style.SUCCESS("\n=========================================="))
         self.stdout.write(self.style.SUCCESS("✓ SKYEMAN SEED COMPLETED"))
         self.stdout.write(self.style.SUCCESS("  Drop zones:    3"))
         self.stdout.write(self.style.SUCCESS("  Jump packages: 4"))
-        self.stdout.write(self.style.SUCCESS("  Time slots:    0 (admin sets these via /manage/slots/)"))
-        self.stdout.write(self.style.SUCCESS("  Users:         0 (sign up yourself at /accounts/signup/)"))
+        self.stdout.write(self.style.SUCCESS(f"  Demo slots:    {slot_count} (incl. 1 capacity=1 slot that auto-fills)"))
+        self.stdout.write(self.style.SUCCESS(f"  Admin user:    {ADMIN_EMAIL} / {ADMIN_PASSWORD}"))
         self.stdout.write(self.style.SUCCESS("=========================================="))

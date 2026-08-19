@@ -149,7 +149,7 @@
 {% block content %}
 <div class="confirmation-container">
   <div class="confirmation-card scroll-animate">
-    <div class="confirmation-icon text-orange"><i class="bi bi-check-circle-fill"></i></div>
+    <div class="confirmation-icon text-orange"></div>
     <h1>You're booked!</h1>
     <p class="subtitle">Confirmation logged in your dashboard. See you in the sky.</p>
 
@@ -192,23 +192,21 @@
     </div>
 
     <div class="confirmation-actions">
+      <a class="btn btn-orange" href="{% url 'bookings:ticket_svg' booking.pk %}?format=png" download>
+         Download ticket (PNG)
+      </a>
+      <a class="btn btn-ghost" href="{% url 'bookings:ticket_svg' booking.pk %}?format=jpg" download>
+         Download JPG
+      </a>
       <a class="btn btn-orange" href="{% url 'bookings:detail' booking.pk %}">
-        <i class="bi bi-eye"></i> View booking
+         View booking
       </a>
       <a class="btn btn-ghost" href="{% url 'accounts:dashboard' %}">
-        <i class="bi bi-speedometer2"></i> Dashboard
+         Dashboard
       </a>
     </div>
 
-    <div class="share-section">
-      <p><i class="bi bi-share"></i> Share your excitement</p>
-      <div class="share-buttons">
-        <a href="#" aria-label="Share on Twitter"><i class="bi bi-twitter-x"></i></a>
-        <a href="#" aria-label="Share on Instagram"><i class="bi bi-instagram"></i></a>
-        <a href="#" aria-label="Share on Facebook"><i class="bi bi-facebook"></i></a>
-        <a href="#" aria-label="Copy link"><i class="bi bi-link-45deg"></i></a>
-      </div>
-    </div>
+ 
   </div>
 </div>
 {% endblock %}

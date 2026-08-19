@@ -221,14 +221,14 @@
         <div class="booking-title">
           <h1>{{ booking.time_slot.drop_zone.name }}</h1>
           <p>
-            <i class="bi bi-calendar"></i> {{ booking.time_slot.date|date:"l, F j Y" }}
+             {{ booking.time_slot.date|date:"l, F j Y" }}
             &middot;
-            <i class="bi bi-clock"></i> {{ booking.time_slot.start_time|time:"H:i" }}
+             {{ booking.time_slot.start_time|time:"H:i" }}
           </p>
         </div>
         <div class="booking-status">
           <span class="status-badge {{ booking.status }}">
-            <i class="bi bi-{% if booking.status == 'confirmed' %}check-circle{% elif booking.status == 'pending' %}clock{% elif booking.status == 'completed' %}check-circle-fill{% else %}x-circle{% endif %}"></i>
+            
             {{ booking.get_status_display }}
           </span>
         </div>
@@ -236,7 +236,7 @@
     </div>
 
     <div class="detail-card mt-3 scroll-animate scroll-animate-delay-2">
-      <h3><i class="bi bi-info-circle"></i> Jump details</h3>
+      <h3> Jump details</h3>
       <dl class="detail-kv">
         <dt>Package</dt>
         <dd>{{ booking.package.get_name_display }} <span class="highlight">— ₦{{ booking.total_price|floatformat:0|intcomma }}</span></dd>
@@ -259,7 +259,7 @@
 
     {% if booking.payment %}
       <div class="detail-card mt-3 scroll-animate scroll-animate-delay-3">
-        <h3><i class="bi bi-credit-card"></i> Payment</h3>
+        <h3> Payment</h3>
         <div class="payment-summary">
           <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;">
             <div>
@@ -277,26 +277,34 @@
             </div>
           </div>
           <div style="margin-top:0.5rem;font-size:clamp(0.7rem,0.8vw,0.8rem);color:var(--dim);">
-            <i class="bi bi-info-circle"></i> Simulated payment — no real money charged
+             Simulated payment — no real money charged
           </div>
         </div>
       </div>
     {% endif %}
 
     <div class="detail-actions scroll-animate scroll-animate-delay-4">
+      {% if booking.status == "confirmed" or booking.status == "completed" %}
+        <a class="btn btn-orange" href="{% url 'bookings:ticket_svg' booking.id %}?format=png" download>
+           Download ticket (PNG)
+        </a>
+        <a class="btn btn-ghost" href="{% url 'bookings:ticket_svg' booking.id %}?format=jpg" download>
+           Download JPG
+        </a>
+      {% endif %}
       {% if booking.status == "pending" %}
         <a class="btn btn-orange" href="{% url 'bookings:pay' booking.id %}">
-          <i class="bi bi-credit-card"></i> Pay now
+           Pay now
         </a>
       {% endif %}
       <a class="btn btn-ghost" href="{% url 'bookings:reschedule' booking.id %}">
-        <i class="bi bi-calendar-event"></i> Reschedule
+         Reschedule
       </a>
       <a class="btn btn-outline" href="{% url 'bookings:cancel' booking.id %}">
-        <i class="bi bi-x-circle"></i> Cancel
+         Cancel
       </a>
       <a class="btn btn-ghost" href="{% url 'bookings:my_bookings' %}">
-        <i class="bi bi-arrow-left"></i> All bookings
+         All bookings
       </a>
     </div>
   </div>
@@ -304,23 +312,23 @@
   <!-- ===== SIDEBAR ===== -->
   <div>
     <div class="sidebar-card scroll-animate scroll-animate-delay-2">
-      <h3><i class="bi bi-lightbulb"></i> Need to reschedule?</h3>
+      <h3> Need to reschedule?</h3>
       <p class="muted" style="font-size:clamp(0.85rem,0.95vw,0.95rem);margin-bottom:0.75rem;">
         Weather changes, schedule shifts — totally fine. Move your slot or cancel up to the day before the jump.
       </p>
       <ul>
-        <li><i class="bi bi-check-circle-fill"></i> Free reschedule</li>
-        <li><i class="bi bi-check-circle-fill"></i> Full refund on cancel</li>
-        <li><i class="bi bi-check-circle-fill"></i> Simulated payment</li>
+        <li> Free reschedule</li>
+        <li> Full refund on cancel</li>
+        <li> Simulated payment</li>
       </ul>
     </div>
 
     <div class="sidebar-card mt-3 scroll-animate scroll-animate-delay-3">
-      <h3><i class="bi bi-question-circle"></i> Quick help</h3>
+      <h3> Quick help</h3>
       <ul>
-        <li><i class="bi bi-chat-dots"></i> <a href="#" onclick="document.getElementById('chatToggle').click();return false;">Chat with assistant</a></li>
-        <li><i class="bi bi-envelope"></i> <a href="mailto:hello@skyeman.com">Email support</a></li>
-        <li><i class="bi bi-telephone"></i> <a href="tel:+234800753626">Call us</a></li>
+        <li> <a href="#" onclick="document.getElementById('chatToggle').click();return false;">Chat with assistant</a></li>
+        <li> <a href="mailto:hello@skyeman.com">Email support</a></li>
+        <li> <a href="tel:+234800753626">Call us</a></li>
       </ul>
     </div>
   </div>

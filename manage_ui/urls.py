@@ -12,4 +12,7 @@ urlpatterns = [
     path("dropzones/", views.dropzones_list, name="dropzones"),
     path("users/", views.users_list, name="users"),
     path("payments/", views.payments_list, name="payments"),
+    path("slots/", views.slots_list, name="slots"),
+    path("slots/new/", views.slot_create, name="slot_create"),
+    path("slots/<int:pk>/action/", views.slot_action, name="slot_action"),
 ]

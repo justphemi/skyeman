@@ -5,14 +5,14 @@
 <div class="ops-header">
   <div>
     <div class="crumbs"><a href="{% url 'manage_ui:dashboard' %}">Console</a> / Payments</div>
-    <h1><i class="bi bi-credit-card text-orange"></i> Payments</h1>
+    <h1> Payments</h1>
   </div>
   <div style="font-size:0.82rem;color:var(--muted);">Showing up to 200 most recent</div>
 </div>
 
 <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));">
   <div class="kpi-card accent">
-    <i class="bi bi-cash-stack kpi-icon"></i>
+    
     <div class="kpi-label">Total Paid (filtered)</div>
     <div class="kpi-value">₦{{ total_paid|floatformat:0|intcomma }}</div>
     <div class="kpi-sub">Sum of successful payments</div>

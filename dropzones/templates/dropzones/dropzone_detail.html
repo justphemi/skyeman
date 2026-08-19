@@ -65,18 +65,18 @@
 
 {% block content %}
 <div class="dz-hero">
-  <div class="dz-hero-bg" style="background-image: url('{{ drop_zone.image_url|default:'https://images.unsplash.com/photo-1521673461164-de300ebcfb17?auto=format&fit=crop&w=1200&q=80' }}');"></div>
+  <div class="dz-hero-bg" style="background-image: url(`{{ drop_zone.image_url|default:'https://images.unsplash.com/photo-1521673461164-de300ebcfb17?auto=format&fit=crop&w=1200&q=80' }}`);"></div>
   <div class="dz-hero-overlay"></div>
   <div class="dz-hero-content">
     <span class="pill" style="background:#ff6a1a;color:#fff;font-weight:700;padding:4px 12px;border-radius:20px;font-size:0.8rem;">
-      <i class="bi bi-geo-alt-fill"></i> {{ drop_zone.city }}
+       {{ drop_zone.city }}
     </span>
     <h1 class="text-white mt-2 mb-1" style="font-weight:800;font-size:clamp(1.8rem, 4vw, 2.8rem);">{{ drop_zone.name }}</h1>
-    <p class="muted mb-2" style="color:#c8cee0;font-size:1rem;"><i class="bi bi-pin-map-fill text-orange"></i> {{ drop_zone.address }}</p>
+    <p class="muted mb-2" style="color:#c8cee0;font-size:1rem;"> {{ drop_zone.address }}</p>
     <p class="text-white-50" style="font-size:0.95rem;line-height:1.6;margin-bottom:1rem;">{{ drop_zone.description }}</p>
     <div class="d-flex gap-2 flex-wrap">
       <a class="btn btn-orange" href="{% url 'dropzones:timeslot_list' %}?dropzone={{ drop_zone.pk }}">
-        <i class="bi bi-calendar-event"></i> View Schedule ({{ slots|length }} Slots)
+         View Schedule ({{ slots|length }} Slots)
       </a>
       <a class="btn btn-ghost" href="{% url 'dropzones:dropzone_list' %}" style="border:1px solid rgba(255,255,255,0.2);color:#fff;">
         All Drop Zones
@@ -104,9 +104,7 @@
               <div style="font-weight:700;color:#fff;font-size:1.05rem;">
                 {{ slot.start_time|time:"h:i A" }}
               </div>
-              <div style="font-size:0.85rem;color:#98a0b3;">
-                Instructor: <strong style="color:#e8ecf5;">{{ slot.instructor.name|default:"USPA Jumpmaster" }}</strong> · {{ slot.seats_left }} of {{ slot.capacity }} seats left
-              </div>
+              
             </div>
           </div>
 

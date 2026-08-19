@@ -16,4 +16,5 @@ urlpatterns = [
     path("<int:pk>/confirmation/", views.booking_confirmation, name="confirmation"),
     path("<int:pk>/reschedule/", views.booking_reschedule, name="reschedule"),
     path("<int:pk>/cancel/", views.booking_cancel, name="cancel"),
+    path("<int:pk>/ticket", views.booking_ticket_svg, name="ticket"),
 ]

@@ -1,0 +1,384 @@
+{% extends "skyeman_project/base.html" %}
+{% load humanize %}
+{% block title %}Confirm jumper details — Skyeman{% endblock %}
+{% block marketing_footer %}{% endblock %}
+
+{% block extra_head %}
+<style>
+  .wizard-wrap {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 1rem 0 3rem;
+  }
+  .step-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  .step-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #98a0b3;
+  }
+  .step-pill.is-done {
+    background: rgba(34, 197, 94, 0.08);
+    border-color: rgba(34, 197, 94, 0.3);
+    color: #4ade80;
+  }
+  .step-pill.is-active {
+    background: rgba(255, 106, 26, 0.12);
+    border-color: rgba(255, 106, 26, 0.4);
+    color: #ff8a3d;
+  }
+  .step-bar .arrow {
+    color: #4b5563;
+    font-weight: 700;
+  }
+
+  .breadcrumb {
+    color: #98a0b3;
+    font-size: 0.88rem;
+    margin-bottom: 1rem;
+  }
+  .breadcrumb a {
+    color: #ff8a3d;
+    text-decoration: none;
+  }
+
+  .eyebrow {
+    color: #ff6a1a;
+    font-weight: 700;
+    font-size: 0.82rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+  }
+  .page-title {
+    font-size: clamp(1.6rem, 2.4vw, 2.1rem);
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 0.4rem;
+  }
+  .page-sub {
+    color: #98a0b3;
+    font-size: 1rem;
+    margin-bottom: 1.6rem;
+  }
+
+  .summary-card {
+    background: #141a26;
+    border: 1px solid #232d3f;
+    border-radius: 14px;
+    padding: 1.1rem 1.25rem;
+    margin-bottom: 1.6rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 0.85rem;
+  }
+  .summary-card .label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #98a0b3;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .summary-card .value {
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  .summary-card .value .small {
+    font-weight: 500;
+    color: #cbd1dc;
+    font-size: 0.85rem;
+    display: block;
+    margin-top: 2px;
+  }
+
+  .form-section {
+    background: #141a26;
+    border: 1px solid #232d3f;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1.4rem;
+  }
+  .form-section h2 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 0.4rem;
+  }
+  .form-section .section-sub {
+    color: #98a0b3;
+    font-size: 0.85rem;
+    margin-bottom: 1.1rem;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  .form-group label {
+    display: block;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #cbd1dc;
+    margin-bottom: 0.4rem;
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    background: #0b0f17;
+    border: 1.5px solid #2a3448;
+    color: #fff;
+    border-radius: 10px;
+    padding: 11px 14px;
+    font-size: 0.92rem;
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    border-color: #ff6a1a;
+    box-shadow: 0 0 0 3px rgba(255, 106, 26, 0.2);
+    outline: none;
+  }
+
+  .field-error {
+    color: #f87171;
+    font-size: 0.78rem;
+    margin-top: 4px;
+  }
+
+  .companions {
+    margin-top: 1.5rem;
+    background: #0b0f17;
+    border: 1px dashed #2a3448;
+    border-radius: 14px;
+    padding: 1.25rem;
+  }
+  .companions h3 {
+    color: #ff8a3d;
+    font-size: 0.95rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.5rem;
+  }
+  .companions .sub {
+    color: #98a0b3;
+    font-size: 0.82rem;
+    margin-bottom: 1rem;
+  }
+
+  .companion-row {
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid #232d3f;
+  }
+  .companion-row:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+  .companion-row .row-label {
+    font-weight: 600;
+    color: #ff8a3d;
+    font-size: 0.85rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 2rem;
+    gap: 1rem;
+  }
+  .actions .left {
+    color: #98a0b3;
+    font-size: 0.88rem;
+  }
+
+  .reassure {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #232d3f;
+    color: #98a0b3;
+    font-size: 0.85rem;
+  }
+  .reassure span {
+    color: #4ade80;
+    font-weight: 600;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wizard-wrap">
+  <div class="step-bar">
+    <span class="step-pill is-done">Step 1 &middot; {{ dropzone.name }}</span>
+    <span class="arrow">&rarr;</span>
+    <span class="step-pill is-done">Step 2 &middot; {{ package.name }}</span>
+    <span class="arrow">&rarr;</span>
+    <span class="step-pill is-done">Step 3 &middot; {{ slot.date|date:"M j" }} {{ slot.start_time|time:"H:i" }}</span>
+    <span class="arrow">&rarr;</span>
+    <span class="step-pill is-active">Step 4 of {{ total_steps }} &middot; Details</span>
+  </div>
+
+  <div class="breadcrumb">
+    {{ dropzone.name }} &middot; {{ package.name }} &middot;
+    <a href="{% url 'bookings:step_slot' %}?dropzone={{ dropzone.id }}&package={{ package.id }}">{{ slot.date|date:"M j" }} {{ slot.start_time|time:"H:i" }}</a>
+  </div>
+
+  <div class="eyebrow">Final step</div>
+  <h1 class="page-title">Your jumper details</h1>
+  <p class="page-sub">A few details so we can confirm eligibility and prepare your harness. You can add companions below.</p>
+
+  <div class="summary-card">
+    <div>
+      <div class="label">Drop zone</div>
+      <div class="value">{{ dropzone.name }}<span class="small">{{ dropzone.city }}</span></div>
+    </div>
+    <div>
+      <div class="label">Package</div>
+      <div class="value">{{ package.name }}<span class="small">&#8358;{{ package.price|floatformat:0|intcomma }} per jumper</span></div>
+    </div>
+    <div>
+      <div class="label">Date</div>
+      <div class="value">{{ slot.date|date:"l, M j, Y" }}</div>
+    </div>
+    <div>
+      <div class="label">Time</div>
+      <div class="value">{{ slot.start_time|time:"H:i" }}<span class="small">{{ slot.seats_left }} seat{{ slot.seats_left|pluralize }} remaining</span></div>
+    </div>
+  </div>
+
+  <form method="post" novalidate>
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="form-section" style="border-color:#ef4444;">
+        {% for err in form.non_field_errors %}<div class="field-error">{{ err }}</div>{% endfor %}
+      </div>
+    {% endif %}
+
+    <div class="form-section">
+      <h2>About you</h2>
+      <p class="section-sub">Used to confirm you meet the package's age and weight limits.</p>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="{{ form.jumper_age.id_for_label }}">{{ form.jumper_age.label }}</label>
+          {{ form.jumper_age }}
+          {% if form.jumper_age.errors %}<div class="field-error">{{ form.jumper_age.errors|join:", " }}</div>{% endif %}
+        </div>
+        <div class="form-group">
+          <label for="{{ form.jumper_weight_kg.id_for_label }}">{{ form.jumper_weight_kg.label }}</label>
+          {{ form.jumper_weight_kg }}
+          {% if form.jumper_weight_kg.errors %}<div class="field-error">{{ form.jumper_weight_kg.errors|join:", " }}</div>{% endif %}
+        </div>
+        <div class="form-group">
+          <label for="{{ form.group_size.id_for_label }}">{{ form.group_size.label }}</label>
+          {{ form.group_size }}
+          {% if form.group_size.errors %}<div class="field-error">{{ form.group_size.errors|join:", " }}</div>{% endif %}
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top:0.5rem;">
+        <label for="{{ form.notes.id_for_label }}">{{ form.notes.label }}</label>
+        {{ form.notes }}
+        {% if form.notes.errors %}<div class="field-error">{{ form.notes.errors|join:", " }}</div>{% endif %}
+      </div>
+    </div>
+
+    <div class="companions" id="companionsBox">
+      <h3>Companions</h3>
+      <p class="sub">For each jumper joining you, give us their name and age so we can size harnesses correctly.</p>
+      <div id="companionsList">
+        {% for cf in form.companion_forms %}
+          <div class="companion-row companion-template" data-index="{{ forloop.counter0 }}">
+            <div class="row-label">Companion #{{ forloop.counter }}</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label>Full name</label>
+                {{ cf.full_name }}
+              </div>
+              <div class="form-group">
+                <label>Age</label>
+                {{ cf.age }}
+              </div>
+              <div class="form-group">
+                <label>Weight (kg, optional)</label>
+                {{ cf.weight_kg }}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="actions">
+      <a class="btn btn-ghost" href="{% url 'bookings:step_slot' %}?dropzone={{ dropzone.id }}&package={{ package.id }}" style="padding:10px 22px;">&larr; Back</a>
+      <button type="submit" class="btn btn-orange" style="padding:14px 32px;font-weight:800;font-size:1rem;">
+        Continue to payment
+      </button>
+    </div>
+
+    <div class="reassure">
+      <span>100% weather guarantee</span>
+      <span>Free rescheduling if wind or clouds cancel flight</span>
+      <span>Simulated payment &mdash; no real charges</span>
+    </div>
+  </form>
+</div>
+
+<script>
+  // Show / hide companion rows based on group_size
+  (function() {
+    const sizeInput = document.getElementById('{{ form.group_size.id_for_label }}');
+    const list = document.getElementById('companionsList');
+    const box = document.getElementById('companionsBox');
+    const templates = Array.from(document.querySelectorAll('.companion-template'));
+
+    function render() {
+      const size = parseInt(sizeInput.value || '1', 10);
+      const companions = Math.max(0, size - 1);
+      list.innerHTML = '';
+      if (companions <= 0) {
+        box.style.display = 'none';
+        return;
+      }
+      box.style.display = 'block';
+      for (let i = 0; i < companions && i < templates.length; i++) {
+        const node = templates[i].cloneNode(true);
+        node.style.display = 'block';
+        list.appendChild(node);
+      }
+    }
+    if (sizeInput) {
+      sizeInput.addEventListener('input', render);
+      sizeInput.addEventListener('change', render);
+      render();
+    }
+  })();
+</script>
+{% endblock %}

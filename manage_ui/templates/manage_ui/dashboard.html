@@ -5,44 +5,44 @@
 <div class="ops-header">
   <div>
     <div class="crumbs"><a href="{% url 'manage_ui:dashboard' %}">Console</a> / Dashboard</div>
-    <h1><i class="bi bi-speedometer2 text-orange"></i> Operations Dashboard</h1>
+    <h1> Operations Dashboard</h1>
   </div>
   <div style="font-size:0.82rem;color:var(--muted);">{{ today|date:"l, F j, Y" }}</div>
 </div>
 
 <div class="kpi-grid">
   <div class="kpi-card accent">
-    <i class="bi bi-cash-coin kpi-icon"></i>
+    
     <div class="kpi-label">Revenue (30d)</div>
     <div class="kpi-value">₦{{ kpis.revenue_30d|floatformat:0|intcomma }}</div>
     <div class="kpi-sub">Paid bookings last 30 days</div>
   </div>
   <div class="kpi-card">
-    <i class="bi bi-calendar-day kpi-icon"></i>
+    
     <div class="kpi-label">Jumps Today</div>
     <div class="kpi-value">{{ kpis.today_count }}</div>
     <div class="kpi-sub">Scheduled flights</div>
   </div>
   <div class="kpi-card">
-    <i class="bi bi-calendar-week kpi-icon"></i>
+    
     <div class="kpi-label">Jumps This Week</div>
     <div class="kpi-value">{{ kpis.week_count }}</div>
     <div class="kpi-sub">Next 7 days</div>
   </div>
   <div class="kpi-card">
-    <i class="bi bi-hourglass-split kpi-icon"></i>
+    
     <div class="kpi-label">Pending Payment</div>
     <div class="kpi-value">{{ kpis.pending_count }}</div>
     <div class="kpi-sub">Awaiting checkout</div>
   </div>
   <div class="kpi-card">
-    <i class="bi bi-people-fill kpi-icon"></i>
+    
     <div class="kpi-label">Total Customers</div>
     <div class="kpi-value">{{ kpis.total_users }}</div>
     <div class="kpi-sub">Registered accounts</div>
   </div>
   <div class="kpi-card">
-    <i class="bi bi-geo-alt-fill kpi-icon"></i>
+    
     <div class="kpi-label">Drop Zones</div>
     <div class="kpi-value">{{ kpis.total_dropzones }}</div>
     <div class="kpi-sub">{{ kpis.open_slots_week }} open slots this week</div>

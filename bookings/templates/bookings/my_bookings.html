@@ -198,7 +198,7 @@
       <p style="margin:0;">Every flight you've booked, past and upcoming.</p>
     </div>
     <a class="btn btn-orange btn-sm" href="{% url 'dropzones:timeslot_list' %}">
-      <i class="bi bi-plus-lg"></i> New booking
+       New booking
     </a>
   </div>
 </div>
@@ -214,9 +214,9 @@
         <div class="slot-main">
           <div class="title">{{ b.time_slot.drop_zone.name }} — {{ b.package.name }}</div>
           <div class="meta">
-            <span><i class="bi bi-clock"></i> {{ b.time_slot.start_time|time:"H:i" }}</span>
+            <span> {{ b.time_slot.start_time|time:"H:i" }}</span>
             <span>·</span>
-            <span><i class="bi bi-person-badge"></i> {{ b.time_slot.instructor|default:"TBA" }}</span>
+            <span> {{ b.time_slot.instructor|default:"TBA" }}</span>
             <span>·</span>
             <span class="status-pill {{ b.status }}">{{ b.get_status_display }}</span>
             {% if b.payment %}
@@ -227,7 +227,7 @@
         </div>
         <div class="slot-actions">
           <a class="btn btn-ghost btn-sm" href="{% url 'bookings:detail' b.pk %}">
-            <i class="bi bi-eye"></i> View
+             View
           </a>
         </div>
       </div>
@@ -237,18 +237,18 @@
   {% if bookings|length > 5 %}
     <div class="actions" style="justify-content:center;margin-top:1.5rem;">
       <a class="btn btn-ghost" href="#">
-        <i class="bi bi-arrow-down"></i> Load more
+         Load more
       </a>
     </div>
   {% endif %}
   
 {% else %}
   <div class="empty-state scroll-animate">
-    <div class="empty-icon"><i class="bi bi-journal-text"></i></div>
+    <div class="empty-icon"></div>
     <h3>No bookings yet</h3>
     <p>You haven't booked any jumps yet. Time to take the leap!</p>
     <a class="btn btn-orange" href="{% url 'dropzones:timeslot_list' %}">
-      <i class="bi bi-search"></i> Find a slot
+       Find a slot
     </a>
   </div>
 {% endif %}
