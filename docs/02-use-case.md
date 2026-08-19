@@ -37,6 +37,7 @@ flowchart LR
       UC13([Cancel booking])
       UC14([Reschedule booking])
       UC15([Edit profile])
+      UC22([Download booking ticket])
       UC16([View operations dashboard])
       UC17([Manage drop zones])
       UC18([Manage packages])
@@ -67,6 +68,7 @@ flowchart LR
     Customer --- UC13
     Customer --- UC14
     Customer --- UC15
+    Customer --- UC22
 
     %% Admin connections
     Admin --- UC2
@@ -108,17 +110,23 @@ flowchart LR
 - **Preconditions:** None.
 - **Main flow:**
   1. Guest visits `/accounts/signup/`.
-  2. Enters username, first/last name, email, and password.
-  3. System creates a User record and logs them in.
-  4. System redirects to the dashboard.
-- **Postconditions:** A new `User` exists. The session is authenticated.
-- **Alternative flows:** Username taken / weak password → form re-renders with errors.
+  2. A 2-step wizard: step 1 collects email (and optional full name); step 2 collects a single password (no confirm-password field — we deliberately dropped `password2`).
+  3. The form auto-derives a unique `username` from the email local-part (`example`, `example2`, `example3` if duplicates) and stores it on a hidden field — the customer never sees or types a username.
+  4. On submit, the user is created and `login()` runs **after** `CreateView.form_valid()` so the session survives the next request (we previously had a double-save bug that re-hashed the password and invalidated the session).
+  5. System redirects to the dashboard.
+- **Postconditions:** A new `User` exists with first/last name auto-derived from `full_name` (or the email local-part as fallback). The session is authenticated.
+- **Alternative flows:** Email already in use / weak password → form re-renders with errors.
 
 ### UC-2: Log in / Log out
 - **Actor:** Guest, Customer, Admin
 - **Preconditions:** None for log in. Logged-in session for log out.
-- **Main flow:** Standard Django auth — POST credentials → session created → redirect. POST to `/accounts/logout/` → session cleared → redirect home.
+- **Main flow:**
+  1. Guest visits `/accounts/login/`.
+  2. The form's "Username" field is labelled **"Email or Username"**. The form's `clean()` accepts either and resolves an email to the matching `User.username` before Django's standard authentication runs.
+  3. POST `/accounts/login/` → session created → redirect to dashboard (or `next`).
+  4. POST `/accounts/logout/` → session cleared → redirect home with a toast.
 - **Postconditions:** Session state reflects the change.
+- **Note:** `redirect_authenticated_user=True` is **not** set on the login view — it caused an infinite loop between `/accounts/login/` and `/accounts/dashboard/` (both protected).
 
 ### UC-6 → UC-9: 4-step booking wizard
 - **Actor:** Customer
@@ -173,3 +181,19 @@ flowchart LR
   2. `/manage/slots/new/` is a quick-create form (drop zone, date, start time, capacity).
   3. Each row has one-click buttons: `Open` / `Mark full` / `Cancel (weather)` / `Delete` (only when zero bookings).
 - **Postconditions:** Slot availability changes are immediately visible to the customer wizard.
+
+### UC-22: Download booking ticket
+- **Actor:** Customer
+- **Preconditions:** The booking belongs to the customer and its status is `confirmed` or `completed`.
+- **Main flow:**
+  1. On the booking detail page (`/bookings/<pk>/`) or the confirmation page, the customer clicks "Download ticket (PNG)" or "Download JPG".
+  2. The browser hits `GET /bookings/<pk>/ticket?format=png|jpg|jpeg|svg`.
+  3. The view builds a 880×360 brand-styled ticket (Skyeman logo, `CONFIRMED` pill, jumper name, drop zone + city, package, date, time, group size, amount, reference `SKY-000007`, issue date, skyeman.com) using Pillow (PNG/JPEG) or inline SVG.
+  4. The response is sent as `Content-Type: image/png|jpeg|svg+xml` with `Content-Disposition: attachment; filename="skyeman-ticket-SKY-000007.{ext}"`.
+- **Postconditions:** The customer has a shareable, printable confirmation. No booking record changes.
+
+---
+
+## 2.4 UX notes
+
+- **Footer visibility** — `templates/skyeman_project/base.html` wraps the marketing `footer` in `{% if not user.is_authenticated %}`. Public pages (home, browse, about, terms) show the footer; the moment the user signs in or logs in, the dashboard, bookings, profile, and `/manage/` pages render without it, keeping authenticated surfaces focused.

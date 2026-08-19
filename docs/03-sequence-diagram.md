@@ -131,14 +131,35 @@ sequenceDiagram
     participant V as SignUpView
     participant F as SignUpForm
     participant U as User (DB)
+    participant S as Session
     G->>V: GET /accounts/signup/
-    V-->>G: Render wizard form
-    G->>V: POST form
-    V->>F: Validate
+    V-->>G: Render 2-step wizard (step 1: email + full name; step 2: password)
+    G->>V: POST {email, full_name, password1}
+    V->>F: Validate (auto-derives hidden username from email)
+    Note over F: password2 was removed — single password field
     F-->>V: cleaned_data
-    V->>U: create_user + save
-    V->>V: login(user)
-    V-->>G: Redirect to /accounts/dashboard/
+    V->>U: super().form_valid() saves user once
+    V->>S: login(self.object) AFTER save (avoid double-save hash bug)
+    V-->>G: 302 → /accounts/dashboard/
+```
+
+### 3.3.1b Log in (email or username)
+```mermaid
+%%{init: {'theme': 'dark'}}%%
+sequenceDiagram
+    autonumber
+    actor G as Guest
+    participant V as SkyemanLoginView
+    participant F as EmailAuthenticationForm
+    participant U as User (DB)
+    G->>V: GET /accounts/login/
+    V-->>G: Render form (username field labelled "Email or Username")
+    G->>V: POST {username, password} (username may be email)
+    V->>F: clean() — if "@" in username, lookup User by email, replace with real username
+    F->>U: authenticate(username, password)
+    U-->>F: user
+    F-->>V: authenticated user
+    V->>V: form_valid → super() redirects to /accounts/dashboard/
 ```
 
 ### 3.3.2 Cancel booking
@@ -226,6 +247,29 @@ sequenceDiagram
         V-->>A: Redirect to /manage/slots/ (success toast)
     else Slot already exists
         V-->>A: Redirect to /manage/slots/ (info toast, no duplicate)
+    end
+```
+
+### 3.3.6 Customer downloads booking ticket
+```mermaid
+%%{init: {'theme': 'dark'}}%%
+sequenceDiagram
+    autonumber
+    actor C as Customer
+    participant V as Booking Detail page
+    participant T as Ticket View
+    participant B as Booking (DB)
+    participant P as Pillow renderer
+    C->>V: GET /bookings/<pk>/
+    V-->>C: Render detail with "Download ticket (PNG)" + "Download JPG" buttons
+    C->>T: GET /bookings/<pk>/ticket?format=png
+    T->>B: load booking (user-scoped, status must be confirmed/completed)
+    alt Booking not eligible
+        T-->>C: Redirect back with error toast
+    else Eligible
+        T->>P: build 880x360 image (logo, CONFIRMED pill, jumper, drop zone, package, date, time, group, amount, ref)
+        P-->>T: PNG bytes
+        T-->>C: 200 image/png, Content-Disposition: attachment
     end
 ```
 

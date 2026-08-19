@@ -143,8 +143,11 @@ A scheduled jump window at a drop zone.
 - **Relationships:** Belongs to one `DropZone`. Has many `Booking`s.
 - **Constraint:** `unique_together = (drop_zone, date, start_time)` — prevents
   the same slot being created twice at the same drop zone.
-- **Seed:** **Not seeded.** Admins create slots via `/manage/slots/new/` or
-  Django admin.
+- **Seed:** `seed.py` creates **4 demo slots** spread across the next week
+  (Ikoyi × 2, Lekki × 1, Victoria Island × 1), including **one slot with
+  `capacity = 1`** at Lekki Coastal two days out — booking it once is enough
+  to demonstrate the auto-flip-to-full behaviour. The admin can still create
+  additional slots via `/manage/slots/new/` or the Django admin.
 
 ### 4.2.5 `Booking`
 The user's reservation of a slot, with eligibility and group details captured
@@ -213,3 +216,9 @@ The (simulated) payment for a booking.
 - **Single-instructor model** — `INSTRUCTOR_NAME = "Femi"` lives as a
   constant in `dropzones/models.py` for marketing copy only. There is no
   `Instructor` model, FK, admin screen, or migration.
+- **Seed command (`bookings/management/commands/seed.py`)** — keeps the demo
+  database in a runnable state. It is idempotent and creates: an admin
+  superuser (`admin@skyeman.com` / `Skyeman123!`), 3 drop zones, 4 jump
+  packages, and 4 demo time slots (one with `capacity = 1`). `seed --reset`
+  wipes dependent records first (BookingParticipant → Payment → Booking →
+  TimeSlot → DropZone → JumpPackage) so it never crashes on `ProtectedError`.

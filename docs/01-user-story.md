@@ -10,8 +10,8 @@
 | # | As a… | I want to… | So that… |
 |---|---|---|---|
 | US-1 | **Guest visitor** | browse drop zones and packages without logging in | I can decide whether Skyeman is worth signing up for. |
-| US-2 | **Guest visitor** | create an account with username, name, and email | I can book jumps and track my bookings. |
-| US-3 | **Customer** | log in securely | my bookings and profile are tied to my account. |
+| US-2 | **Guest visitor** | create an account with just my email, optional full name, and a password (no separate username) | I can book jumps and track my bookings. |
+| US-3 | **Customer** | log in with either my email or my username + password | I don't have to remember which one I signed up with. |
 | US-4 | **Customer** | see all available time slots for a chosen drop zone | I can pick a date and time that fits my schedule. |
 | US-5 | **Customer** | book a jump by walking through a 4-step wizard (drop zone → package → time slot → my details) | I can secure a place on a jump without losing context. |
 | US-6 | **Customer** | add companion jumper names and ages for a Group booking | everyone on my team gets a properly sized harness and waiver. |
@@ -37,6 +37,8 @@ view with KPIs and quick actions.
 | US-17 | **Admin operator** | mark a slot as `full` or `cancelled (weather)` with one click | I can stop new bookings on a sold-out or unsafe day. |
 | US-18 | **Admin operator** | search and filter bookings by customer, drop zone, status, and date | I can quickly find any booking. |
 | US-19 | **Admin operator** | mark a payment as `paid`, `refunded`, or `failed` | I keep financial records in sync with reality. |
+| US-20 | **Customer** | download my booking confirmation as a PNG or JPG ticket | I can show it at the drop zone and share it with friends. |
+| US-21 | **Customer** | browse the site without seeing the marketing footer once I'm logged in | my dashboard stays focused on my bookings. |
 
 ---
 
@@ -52,7 +54,7 @@ view with KPIs and quick actions.
 ## 1.4 Acceptance criteria (selected examples)
 
 **US-5 — Booking a slot**
-- ✅ The customer must be logged in.
+- ✅ The customer must be logged in (signup is a 2-step wizard: email → password; no separate username field, no confirm-password field).
 - ✅ The wizard has exactly four steps: drop zone, package, time slot, details.
 - ✅ State flows via URL query params (`?dropzone=X&package=Y&slot=Z`) so the
   customer can bookmark and share links.
@@ -79,3 +81,24 @@ view with KPIs and quick actions.
 - ✅ `/manage/slots/` lists every slot grouped by date.
 - ✅ A "+ New Slot" form lets staff create a slot in seconds.
 - ✅ One-click buttons on each row: `Open` / `Mark full` / `Cancel` / `Delete`.
+
+**US-20 — Booking ticket download**
+- ✅ On a confirmed booking, the detail page shows two buttons: "Download ticket (PNG)" and "Download JPG".
+- ✅ The PNG endpoint also serves SVG via `?format=svg`.
+- ✅ Each ticket embeds the Skyeman brand mark, a `CONFIRMED` status pill, the jumper name, drop zone, package, date, time, group size, amount, and a unique reference like `SKY-000007`.
+
+---
+
+## 1.5 Seed command
+
+The `python manage.py seed` command (also `--reset`) keeps the demo database
+ready to use:
+
+- Creates or refreshes the **admin user** — `admin@skyeman.com` / `Skyeman123!`
+  (`is_staff=True`, `is_superuser=True`). Idempotent: re-running resets the
+  password so the credentials are always usable.
+- Creates 3 drop zones (Ikoyi Airfield, Lekki Coastal, Victoria Island Skyport).
+- Creates 4 jump packages (Tandem ₦120,000 / AFF ₦220,000 / Solo ₦55,000 / Group ₦95,000).
+- Creates 4 demo time slots spread across the next week, **including one slot
+  with `capacity = 1`** at Lekki Coastal two days out — booking it once is
+  enough to demonstrate the auto-flip-to-full behaviour.
