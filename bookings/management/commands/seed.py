@@ -34,13 +34,13 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args, **opts):
+        from bookings.models import Booking, Payment, BookingParticipant
+
         if opts["reset"]:
             self.stdout.write(self.style.WARNING("Resetting drop zones and packages…"))
             # Clean dependent records first (Bookings PROTECT both DropZone and TimeSlot,
             # and TimeSlots PROTECT DropZone). The seed is a clean slate — wipe everything
             # except users.
-            from bookings.models import Booking, Payment, BookingParticipant
-            from dropzones.models import TimeSlot
             BookingParticipant.objects.all().delete()
             Payment.objects.all().delete()
             Booking.objects.all().delete()
