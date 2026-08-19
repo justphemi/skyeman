@@ -285,9 +285,9 @@
 
     <div class="detail-actions scroll-animate scroll-animate-delay-4">
       {% if booking.status == "confirmed" or booking.status == "completed" %}
-        <a class="btn btn-orange" href="{% url 'bookings:ticket' booking.id %}?format=png" download>
+        <!-- <a class="btn btn-orange" href="{% url 'bookings:ticket' booking.id %}?format=png" download>
            Download ticket (PNG)
-        </a>
+        </a> -->
         <a class="btn btn-ghost" href="{% url 'bookings:ticket' booking.id %}?format=jpg" download>
            Download JPG
         </a>
