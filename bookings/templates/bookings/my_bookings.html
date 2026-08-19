@@ -216,7 +216,7 @@
           <div class="meta">
             <span> {{ b.time_slot.start_time|time:"H:i" }}</span>
             <span>·</span>
-            <span> {{ b.time_slot.instructor|default:"TBA" }}</span>
+            <span> {{ INSTRUCTOR_NAME }}</span>
             <span>·</span>
             <span class="status-pill {{ b.status }}">{{ b.get_status_display }}</span>
             {% if b.payment %}

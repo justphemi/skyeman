@@ -240,9 +240,9 @@
       <dl class="detail-kv">
         <dt>Package</dt>
         <dd>{{ booking.package.get_name_display }} <span class="highlight">— ₦{{ booking.total_price|floatformat:0|intcomma }}</span></dd>
-        
+
         <dt>Instructor</dt>
-        <dd>{{ booking.time_slot.instructor|default:"<span class='muted'>To be assigned</span>" }}</dd>
+        <dd>{{ INSTRUCTOR_NAME }} <span class="muted">(head instructor)</span></dd>
         
         <dt>Location</dt>
         <dd>{{ booking.time_slot.drop_zone.name }}, {{ booking.time_slot.drop_zone.address }}</dd>
@@ -285,10 +285,10 @@
 
     <div class="detail-actions scroll-animate scroll-animate-delay-4">
       {% if booking.status == "confirmed" or booking.status == "completed" %}
-        <a class="btn btn-orange" href="{% url 'bookings:ticket_svg' booking.id %}?format=png" download>
+        <a class="btn btn-orange" href="{% url 'bookings:ticket' booking.id %}?format=png" download>
            Download ticket (PNG)
         </a>
-        <a class="btn btn-ghost" href="{% url 'bookings:ticket_svg' booking.id %}?format=jpg" download>
+        <a class="btn btn-ghost" href="{% url 'bookings:ticket' booking.id %}?format=jpg" download>
            Download JPG
         </a>
       {% endif %}

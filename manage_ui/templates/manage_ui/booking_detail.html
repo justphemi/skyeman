@@ -37,7 +37,7 @@
           <tr><td style="color:var(--muted);">Address</td><td>{{ booking.time_slot.drop_zone.address }}</td></tr>
           <tr><td style="color:var(--muted);">Date</td><td>{{ booking.time_slot.date|date:"l, F j, Y" }}</td></tr>
           <tr><td style="color:var(--muted);">Time</td><td>{{ booking.time_slot.start_time|time:"H:i" }}</td></tr>
-          <tr><td style="color:var(--muted);">Instructor</td><td>{{ booking.time_slot.instructor|default:"—" }}</td></tr>
+          <tr><td style="color:var(--muted);">Instructor</td><td>{{ INSTRUCTOR_NAME }}</td></tr>
           <tr><td style="color:var(--muted);">Package</td><td>{{ booking.package.name }} — {{ booking.package.description|truncatewords:12 }}</td></tr>
           <tr><td style="color:var(--muted);">Notes</td><td>{{ booking.notes|default:"—" }}</td></tr>
         </tbody>

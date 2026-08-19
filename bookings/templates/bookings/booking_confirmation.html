@@ -176,7 +176,7 @@
       </div>
       <div class="row">
         <span class="label">Instructor</span>
-        <span class="value">{{ booking.time_slot.instructor|default:"To be assigned" }}</span>
+        <span class="value">{{ INSTRUCTOR_NAME }}</span>
       </div>
       <div class="row">
         <span class="label">Package</span>
@@ -192,10 +192,10 @@
     </div>
 
     <div class="confirmation-actions">
-      <!-- <a class="btn btn-orange" href="{% url 'bookings:ticket_svg' booking.pk %}?format=png" download>
+      <!-- <a class="btn btn-orange" href="{% url 'bookings:ticket' booking.pk %}?format=png" download>
          Download ticket (PNG)
       </a> -->
-      <a class="btn btn-ghost" href="{% url 'bookings:ticket_svg' booking.pk %}?format=jpg" download>
+      <a class="btn btn-ghost" href="{% url 'bookings:ticket' booking.pk %}?format=jpg" download>
          Download Ticket
       </a>
       <a class="btn btn-orange" href="{% url 'bookings:detail' booking.pk %}">
